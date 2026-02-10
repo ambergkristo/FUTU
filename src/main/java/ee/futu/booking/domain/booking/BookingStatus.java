@@ -5,5 +5,9 @@ public enum BookingStatus {
     CONFIRMED,
     CANCELLED,
     COMPLETED,
-    NO_SHOW
+    NO_SHOW;
+
+    public boolean blocksAvailability() {
+        return this == CONFIRMED;
+    }
 }
