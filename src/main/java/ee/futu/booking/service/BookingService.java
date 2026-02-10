@@ -73,12 +73,12 @@ public class BookingService {
     public void cancelBooking(Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Booking not found"));
-        
+
         // Idempotent: if already cancelled, do nothing
         if (booking.getStatus() == BookingStatus.CANCELLED) {
             return;
         }
-        
+
         booking.setStatus(BookingStatus.CANCELLED);
         bookingRepository.save(booking);
     }
@@ -87,43 +87,52 @@ public class BookingService {
     public BookingResponse rescheduleBooking(Long bookingId, RescheduleRequest request) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Booking not found"));
-        
+
         // Only CONFIRMED bookings can be rescheduled
         if (booking.getStatus() != BookingStatus.CONFIRMED) {
             throw new ResponseStatusException(BAD_REQUEST, "BOOKING_NOT_RESCHEDULABLE");
         }
-        
+
         // Validate new slot time
         validateSlotTime(request.getDate(), request.getStartTime());
-        
+
         // Compute new endTime and price
         LocalTime newEndTime = SlotRules.getEndTime(request.getStartTime());
         int newPriceCents = SlotRules.priceCentsFor(request.getDate());
-        
+
         // Check for conflicts (exclude current booking)
-        if (hasConflictExcluding(booking.getId(), booking.getRoom().getId(), request.getDate(), request.getStartTime(), newEndTime)) {
+        if (hasConflictExcluding(booking.getId(), booking.getRoom().getId(), request.getDate(), request.getStartTime(),
+                newEndTime)) {
             throw new ResponseStatusException(CONFLICT, "BOOKING_OVERLAP");
         }
-        
+
         // Update booking
         booking.setBookingDate(request.getDate());
         booking.setStartTime(request.getStartTime());
         booking.setEndTime(newEndTime);
         booking.setTotalPriceCents(newPriceCents);
-        
+
         booking = bookingRepository.save(booking);
-        
+
         return mapToResponse(booking);
     }
 
+    @Transactional
+    public BookingResponse getBooking(Long id) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Booking not found"));
+        return mapToResponse(booking);
+    }
+
+    @Transactional
     public List<BookingResponse> listBookings(Long roomId, LocalDate date) {
         // Validate room exists
         roomRepository.findById(roomId)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Room not found"));
-        
+
         // Fetch all bookings for room and date (includes all statuses)
         List<Booking> bookings = bookingRepository.findByRoomIdAndBookingDateOrderByStartTime(roomId, date);
-        
+
         // Map to response DTOs
         return bookings.stream()
                 .map(this::mapToResponse)
@@ -169,8 +178,8 @@ public class BookingService {
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Booking not found"));
 
         // Must be DRAFT and not expired
-        if (booking.getStatus() != BookingStatus.DRAFT || 
-            (booking.getExpiresAt() != null && booking.getExpiresAt().isBefore(LocalDateTime.now()))) {
+        if (booking.getStatus() != BookingStatus.DRAFT ||
+                (booking.getExpiresAt() != null && booking.getExpiresAt().isBefore(LocalDateTime.now()))) {
             throw new ResponseStatusException(BAD_REQUEST, "BOOKING_NOT_CONFIRMABLE");
         }
 
@@ -189,22 +198,22 @@ public class BookingService {
     void cancelExpiredDrafts() {
         List<Booking> expiredDrafts = bookingRepository.findExpiredDrafts(
                 BookingStatus.DRAFT, LocalDateTime.now());
-        
+
         if (!expiredDrafts.isEmpty()) {
             List<Long> expiredIds = expiredDrafts.stream()
                     .map(Booking::getId)
                     .collect(Collectors.toList());
-            
+
             bookingRepository.updateStatusByIds(expiredIds, BookingStatus.CANCELLED);
         }
     }
 
     private void validateSlotTime(LocalDate date, LocalTime startTime) {
         List<SlotRules.SlotDef> allowedSlots = SlotRules.allowedSlotsFor(date);
-        
+
         boolean isValidSlot = allowedSlots.stream()
                 .anyMatch(slot -> slot.getStartTime().equals(startTime));
-        
+
         if (!isValidSlot) {
             throw new ResponseStatusException(BAD_REQUEST, "Invalid slot time");
         }
@@ -213,15 +222,16 @@ public class BookingService {
     private boolean hasConflict(Long roomId, LocalDate date, LocalTime startTime, LocalTime endTime) {
         List<Booking> existingBookings = bookingRepository.findByRoomIdAndBookingDateAndStatusIn(
                 roomId, date, Arrays.asList(BookingStatus.CONFIRMED));
-        
+
         return existingBookings.stream()
                 .anyMatch(booking -> hasOverlap(startTime, endTime, booking));
     }
 
-    private boolean hasConflictExcluding(Long excludeBookingId, Long roomId, LocalDate date, LocalTime startTime, LocalTime endTime) {
+    private boolean hasConflictExcluding(Long excludeBookingId, Long roomId, LocalDate date, LocalTime startTime,
+            LocalTime endTime) {
         List<Booking> existingBookings = bookingRepository.findByRoomIdAndBookingDateAndStatusIn(
                 roomId, date, Arrays.asList(BookingStatus.CONFIRMED));
-        
+
         return existingBookings.stream()
                 .filter(booking -> !booking.getId().equals(excludeBookingId))
                 .anyMatch(booking -> hasOverlap(startTime, endTime, booking));
@@ -230,7 +240,7 @@ public class BookingService {
     private boolean hasConflictWithActiveBookings(Long roomId, LocalDate date, LocalTime startTime, LocalTime endTime) {
         List<Booking> activeBookings = bookingRepository.findActiveBookings(
                 roomId, date, BookingStatus.CONFIRMED, BookingStatus.DRAFT, LocalDateTime.now());
-        
+
         return activeBookings.stream()
                 .anyMatch(booking -> hasOverlap(startTime, endTime, booking));
     }
@@ -244,7 +254,7 @@ public class BookingService {
         return newStart.isBefore(existingBlockingEnd) && newEnd.isAfter(existingStart);
     }
 
-    private BookingResponse mapToResponse(Booking booking) {
+    public BookingResponse mapToResponse(Booking booking) {
         BookingResponse response = new BookingResponse();
         response.setId(booking.getId());
         response.setStatus(booking.getStatus().name());

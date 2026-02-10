@@ -15,6 +15,14 @@ public class HoldRequest {
     @NotNull
     private LocalTime startTime;
 
+    private LocalTime endTime;
+
+    private String customerName;
+
+    private String customerEmail;
+
+    private String customerPhone;
+
     public Long getRoomId() {
         return roomId;
     }
@@ -37,5 +45,37 @@ public class HoldRequest {
 
     public void setStartTime(LocalTime startTime) {
         this.startTime = startTime;
+    }
+
+    public LocalTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    public String getCustomerEmail() {
+        return customerEmail;
+    }
+
+    public void setCustomerEmail(String customerEmail) {
+        this.customerEmail = customerEmail;
+    }
+
+    public String getCustomerPhone() {
+        return customerPhone;
+    }
+
+    public void setCustomerPhone(String customerPhone) {
+        this.customerPhone = customerPhone;
     }
 }

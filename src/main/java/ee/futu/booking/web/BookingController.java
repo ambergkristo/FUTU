@@ -52,6 +52,12 @@ public class BookingController {
         return ResponseEntity.ok().body(response);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<BookingResponse> getBooking(@PathVariable Long id) {
+        BookingResponse booking = bookingService.getBooking(id);
+        return ResponseEntity.ok(booking);
+    }
+
     @GetMapping
     public ResponseEntity<List<BookingResponse>> listBookings(
             @RequestParam Long roomId,

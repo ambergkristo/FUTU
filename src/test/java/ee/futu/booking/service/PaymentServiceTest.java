@@ -22,111 +22,111 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class PaymentServiceTest {
 
-    @Mock
-    private BookingRepository bookingRepository;
+        @Mock
+        private BookingRepository bookingRepository;
 
-    @InjectMocks
-    private PaymentService paymentService;
+        @InjectMocks
+        private PaymentService paymentService;
 
-    private Booking draftBooking;
+        private Booking draftBooking;
 
-    @BeforeEach
-    void setUp() {
-        draftBooking = new Booking();
-        draftBooking.setId(1L);
-        draftBooking.setStatus(BookingStatus.DRAFT);
-        draftBooking.setExpiresAt(LocalDateTime.now().plusMinutes(15));
-    }
+        @BeforeEach
+        void setUp() {
+                draftBooking = new Booking();
+                draftBooking.setId(1L);
+                draftBooking.setStatus(BookingStatus.DRAFT);
+                draftBooking.setExpiresAt(LocalDateTime.now().plusMinutes(15));
+        }
 
-    @Test
-    void startPayment_success_transitionsDraftToPendingPayment_andSetsReference() {
-        when(bookingRepository.findById(1L)).thenReturn(java.util.Optional.of(draftBooking));
-        when(bookingRepository.save(any(Booking.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        @Test
+        void startPayment_success_transitionsDraftToPendingPayment_andSetsReference() {
+                when(bookingRepository.findById(1L)).thenReturn(java.util.Optional.of(draftBooking));
+                when(bookingRepository.save(any(Booking.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        StartPaymentRequest request = new StartPaymentRequest();
-        request.setBookingId(1L);
-        request.setProvider("stripe");
+                StartPaymentRequest request = new StartPaymentRequest();
+                request.setBookingId(1L);
+                request.setProvider("stripe");
 
-        StartPaymentResponse response = paymentService.startPayment(request);
+                StartPaymentResponse response = paymentService.startPayment(request);
 
-        assertEquals(1L, response.getBookingId());
-        assertEquals("PENDING_PAYMENT", response.getStatus());
-        assertNotNull(response.getPaymentReference());
-        assertTrue(response.getPaymentUrl().contains("/checkout/"));
-        assertTrue(response.getPaymentUrl().contains(response.getPaymentReference()));
-        assertEquals(draftBooking.getExpiresAt(), response.getExpiresAt());
+                assertEquals(1L, response.getBookingId());
+                assertEquals("PENDING_PAYMENT", response.getStatus());
+                assertNotNull(response.getPaymentReference());
+                assertTrue(response.getPaymentUrl().contains("/checkout/"));
+                assertTrue(response.getPaymentUrl().contains(response.getPaymentReference()));
+                assertEquals(draftBooking.getExpiresAt(), response.getExpiresAt());
 
-        verify(bookingRepository).save(any(Booking.class));
-    }
+                verify(bookingRepository).save(any(Booking.class));
+        }
 
-    @Test
-    void startPayment_notDraft_400() {
-        draftBooking.setStatus(BookingStatus.CONFIRMED);
-        when(bookingRepository.findById(1L)).thenReturn(java.util.Optional.of(draftBooking));
+        @Test
+        void startPayment_notDraft_400() {
+                draftBooking.setStatus(BookingStatus.CONFIRMED);
+                when(bookingRepository.findById(1L)).thenReturn(java.util.Optional.of(draftBooking));
 
-        StartPaymentRequest request = new StartPaymentRequest();
-        request.setBookingId(1L);
+                StartPaymentRequest request = new StartPaymentRequest();
+                request.setBookingId(1L);
 
-        assertThrows(org.springframework.web.server.ResponseStatusException.class,
-                () -> paymentService.startPayment(request));
-    }
+                assertThrows(org.springframework.web.server.ResponseStatusException.class,
+                                () -> paymentService.startPayment(request));
+        }
 
-    @Test
-    void startPayment_expiredDraft_400() {
-        draftBooking.setExpiresAt(LocalDateTime.now().minusMinutes(1));
-        when(bookingRepository.findById(1L)).thenReturn(java.util.Optional.of(draftBooking));
+        @Test
+        void startPayment_expiredDraft_400() {
+                draftBooking.setExpiresAt(LocalDateTime.now().minusMinutes(1));
+                when(bookingRepository.findById(1L)).thenReturn(java.util.Optional.of(draftBooking));
 
-        StartPaymentRequest request = new StartPaymentRequest();
-        request.setBookingId(1L);
+                StartPaymentRequest request = new StartPaymentRequest();
+                request.setBookingId(1L);
 
-        assertThrows(org.springframework.web.server.ResponseStatusException.class,
-                () -> paymentService.startPayment(request));
-    }
+                assertThrows(org.springframework.web.server.ResponseStatusException.class,
+                                () -> paymentService.startPayment(request));
+        }
 
-    @Test
-    void webhook_paid_confirmsPendingPayment_andClearsExpiresAt() {
-        draftBooking.setStatus(BookingStatus.PENDING_PAYMENT);
-        draftBooking.setExpiresAt(LocalDateTime.now().plusMinutes(10));
-        when(bookingRepository.findByPaymentReference(any(String.class)))
-                .thenReturn(java.util.Optional.of(draftBooking));
+        @Test
+        void webhook_paid_confirmsPendingPayment_andClearsExpiresAt() {
+                draftBooking.setStatus(BookingStatus.PENDING_PAYMENT);
+                draftBooking.setExpiresAt(LocalDateTime.now().plusMinutes(10));
+                when(bookingRepository.findByPaymentReference(any(String.class)))
+                                .thenReturn(java.util.Optional.of(draftBooking));
 
-        PaymentWebhookRequest request = new PaymentWebhookRequest();
-        request.setPaymentReference("ref123");
-        request.setEvent("PAID");
+                PaymentWebhookRequest request = new PaymentWebhookRequest();
+                request.setPaymentReference("ref123");
+                request.setEvent("PAID");
 
-        paymentService.handlePaymentWebhook(request);
+                paymentService.handlePaymentWebhook(request);
 
-        verify(bookingRepository).save(any(Booking.class));
-    }
+                verify(bookingRepository).save(any(Booking.class));
+        }
 
-    @Test
-    void webhook_paid_onExpiredPendingPayment_cancels() {
-        draftBooking.setStatus(BookingStatus.PENDING_PAYMENT);
-        draftBooking.setExpiresAt(LocalDateTime.now().minusMinutes(1));
-        when(bookingRepository.findByPaymentReference(any(String.class)))
-                .thenReturn(java.util.Optional.of(draftBooking));
+        @Test
+        void webhook_paid_onExpiredPendingPayment_cancels() {
+                draftBooking.setStatus(BookingStatus.PENDING_PAYMENT);
+                draftBooking.setExpiresAt(LocalDateTime.now().minusMinutes(1));
+                when(bookingRepository.findByPaymentReference(any(String.class)))
+                                .thenReturn(java.util.Optional.of(draftBooking));
 
-        PaymentWebhookRequest request = new PaymentWebhookRequest();
-        request.setPaymentReference("ref123");
-        request.setEvent("PAID");
+                PaymentWebhookRequest request = new PaymentWebhookRequest();
+                request.setPaymentReference("ref123");
+                request.setEvent("PAID");
 
-        paymentService.handlePaymentWebhook(request);
+                paymentService.handlePaymentWebhook(request);
 
-        verify(bookingRepository).save(any(Booking.class));
-    }
+                verify(bookingRepository).save(any(Booking.class));
+        }
 
-    @Test
-    void webhook_failed_cancels() {
-        draftBooking.setStatus(BookingStatus.PENDING_PAYMENT);
-        when(bookingRepository.findByPaymentReference(any(String.class)))
-                .thenReturn(java.util.Optional.of(draftBooking));
+        @Test
+        void webhook_failed_cancels() {
+                draftBooking.setStatus(BookingStatus.PENDING_PAYMENT);
+                when(bookingRepository.findByPaymentReference(any(String.class)))
+                                .thenReturn(java.util.Optional.of(draftBooking));
 
-        PaymentWebhookRequest request = new PaymentWebhookRequest();
-        request.setPaymentReference("ref123");
-        request.setEvent("FAILED");
+                PaymentWebhookRequest request = new PaymentWebhookRequest();
+                request.setPaymentReference("ref123");
+                request.setEvent("FAILED");
 
-        paymentService.handlePaymentWebhook(request);
+                paymentService.handlePaymentWebhook(request);
 
-        verify(bookingRepository).save(any(Booking.class));
-    }
+                verify(bookingRepository).save(any(Booking.class));
+        }
 }

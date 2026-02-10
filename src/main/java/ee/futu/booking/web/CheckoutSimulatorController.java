@@ -14,10 +14,13 @@ public class CheckoutSimulatorController {
                 "<head>\n" +
                 "    <title>Payment Simulator</title>\n" +
                 "    <style>\n" +
-                "        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }\n" +
+                "        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }\n"
+                +
                 "        h1 { color: #333; }\n" +
-                "        .payment-ref { background: #f5f5f5; padding: 10px; border-radius: 5px; font-family: monospace; }\n" +
-                "        button { padding: 12px 24px; margin: 10px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }\n" +
+                "        .payment-ref { background: #f5f5f5; padding: 10px; border-radius: 5px; font-family: monospace; }\n"
+                +
+                "        button { padding: 12px 24px; margin: 10px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }\n"
+                +
                 "        .success { background: #28a745; color: white; }\n" +
                 "        .failed { background: #dc3545; color: white; }\n" +
                 "        .result { margin-top: 20px; padding: 10px; border-radius: 5px; }\n" +
@@ -57,6 +60,8 @@ public class CheckoutSimulatorController {
                 "                if (response.ok) {\n" +
                 "                    resultDiv.className = 'result success-result';\n" +
                 "                    resultDiv.innerHTML = 'Payment processed successfully! Status: ' + status;\n" +
+                "                    resultDiv.innerHTML += '<br><br><a href=\"http://localhost:5173/\" style=\"color: #007bff; text-decoration: none; font-weight: bold;\">Return to booking page</a>';\n"
+                +
                 "                } else {\n" +
                 "                    const errorText = await response.text();\n" +
                 "                    resultDiv.className = 'result error-result';\n" +
