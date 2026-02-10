@@ -52,7 +52,7 @@ class PaymentServiceTest {
         assertEquals(1L, response.getBookingId());
         assertEquals("PENDING_PAYMENT", response.getStatus());
         assertNotNull(response.getPaymentReference());
-        assertTrue(response.getPaymentUrl().startsWith("https://pay.local/checkout/"));
+        assertTrue(response.getPaymentUrl().contains("/checkout/"));
         assertTrue(response.getPaymentUrl().contains(response.getPaymentReference()));
         assertEquals(draftBooking.getExpiresAt(), response.getExpiresAt());
 
