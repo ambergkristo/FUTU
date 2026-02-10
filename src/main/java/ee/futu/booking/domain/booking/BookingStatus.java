@@ -1,6 +1,7 @@
 package ee.futu.booking.domain.booking;
 
 public enum BookingStatus {
+    DRAFT,
     CREATED,
     CONFIRMED,
     CANCELLED,
@@ -8,6 +9,6 @@ public enum BookingStatus {
     NO_SHOW;
 
     public boolean blocksAvailability() {
-        return this == CONFIRMED;
+        return this == CONFIRMED || this == DRAFT;
     }
 }

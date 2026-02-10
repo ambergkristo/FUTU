@@ -1,21 +1,24 @@
 package ee.futu.booking.web;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 public class BookingResponse {
-    
+
     private Long id;
     private String status;
     private LocalDate date;
     private LocalTime startTime;
     private LocalTime endTime;
     private Integer priceCents;
+    private LocalDateTime expiresAt;
     private String customerName;
     private String customerEmail;
     private String customerPhone;
 
-    public BookingResponse() {}
+    public BookingResponse() {
+    }
 
     public Long getId() {
         return id;
@@ -63,6 +66,14 @@ public class BookingResponse {
 
     public void setPriceCents(Integer priceCents) {
         this.priceCents = priceCents;
+    }
+
+    public LocalDateTime getExpiresAt() {
+        return expiresAt;
+    }
+
+    public void setExpiresAt(LocalDateTime expiresAt) {
+        this.expiresAt = expiresAt;
     }
 
     public String getCustomerName() {

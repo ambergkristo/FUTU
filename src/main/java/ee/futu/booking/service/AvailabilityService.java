@@ -9,9 +9,9 @@ import ee.futu.booking.web.SlotStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -31,11 +31,9 @@ public class AvailabilityService {
     }
 
     private List<Booking> getBlockingBookings(Long roomId, LocalDate date) {
-        List<BookingStatus> blockingStatuses = Arrays.stream(BookingStatus.values())
-                .filter(BookingStatus::blocksAvailability)
-                .toList();
-
-        return bookingRepository.findByRoomIdAndBookingDateAndStatusIn(roomId, date, blockingStatuses);
+        // Use new method that considers DRAFT expiry
+        return bookingRepository.findActiveBookings(
+                roomId, date, BookingStatus.CONFIRMED, BookingStatus.DRAFT, LocalDateTime.now());
     }
 
     private List<SlotInfo> generateSlots(LocalDate date, List<Booking> blockingBookings) {

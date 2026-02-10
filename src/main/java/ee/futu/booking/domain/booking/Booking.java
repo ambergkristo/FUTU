@@ -38,6 +38,9 @@ public class Booking {
         @Column(nullable = false, length = 20)
         private BookingStatus status;
 
+        @Column(name = "expires_at")
+        private LocalDateTime expiresAt;
+
         @Column(length = 100)
         private String customerName;
 

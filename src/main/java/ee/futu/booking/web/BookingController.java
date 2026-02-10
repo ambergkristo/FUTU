@@ -39,6 +39,19 @@ public class BookingController {
         return ResponseEntity.ok().body(response);
     }
 
+    @PostMapping("/hold")
+    public ResponseEntity<BookingResponse> holdBooking(@Valid @RequestBody HoldRequest request) {
+        BookingResponse response = bookingService.holdBooking(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/{id}/confirm")
+    public ResponseEntity<BookingResponse> confirmBooking(@PathVariable Long id,
+            @Valid @RequestBody ConfirmRequest request) {
+        BookingResponse response = bookingService.confirmBooking(id, request);
+        return ResponseEntity.ok().body(response);
+    }
+
     @GetMapping
     public ResponseEntity<List<BookingResponse>> listBookings(
             @RequestParam Long roomId,
