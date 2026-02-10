@@ -1,0 +1,17 @@
+C:\Users\Kasutaja\Documents\Futu-booking\FUTU\src\main\java\ee\futu\booking\FutuBookingApplication.java
+C:\Users\Kasutaja\Documents\Futu-booking\FUTU\src\main\java\ee\futu\booking\domain\payment\Payment.java
+C:\Users\Kasutaja\Documents\Futu-booking\FUTU\src\main\java\ee\futu\booking\domain\booking\BookingRepository.java
+C:\Users\Kasutaja\Documents\Futu-booking\FUTU\src\main\java\ee\futu\booking\domain\slot\SlotTemplateRepository.java
+C:\Users\Kasutaja\Documents\Futu-booking\FUTU\src\main\java\ee\futu\booking\service\BookingService.java
+C:\Users\Kasutaja\Documents\Futu-booking\FUTU\src\main\java\ee\futu\booking\domain\room\Room.java
+C:\Users\Kasutaja\Documents\Futu-booking\FUTU\src\main\java\ee\futu\booking\service\AvailabilityService.java
+C:\Users\Kasutaja\Documents\Futu-booking\FUTU\src\main\java\ee\futu\booking\domain\slot\SlotTemplate.java
+C:\Users\Kasutaja\Documents\Futu-booking\FUTU\src\main\java\ee\futu\booking\domain\booking\Booking.java
+C:\Users\Kasutaja\Documents\Futu-booking\FUTU\src\main\java\ee\futu\booking\util\WeekdayMapper.java
+C:\Users\Kasutaja\Documents\Futu-booking\FUTU\src\main\java\ee\futu\booking\web\AvailabilityController.java
+C:\Users\Kasutaja\Documents\Futu-booking\FUTU\src\main\java\ee\futu\booking\web\BookingController.java
+C:\Users\Kasutaja\Documents\Futu-booking\FUTU\src\main\java\ee\futu\booking\domain\payment\PaymentRepository.java
+C:\Users\Kasutaja\Documents\Futu-booking\FUTU\src\main\java\ee\futu\booking\domain\booking\BookingStatus.java
+C:\Users\Kasutaja\Documents\Futu-booking\FUTU\src\main\java\ee\futu\booking\config\JpaConfig.java
+C:\Users\Kasutaja\Documents\Futu-booking\FUTU\src\main\java\ee\futu\booking\domain\room\RoomRepository.java
+C:\Users\Kasutaja\Documents\Futu-booking\FUTU\src\main\java\ee\futu\booking\config\SecurityConfig.java
