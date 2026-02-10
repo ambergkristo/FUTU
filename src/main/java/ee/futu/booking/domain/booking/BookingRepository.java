@@ -1,4 +1,6 @@
-package main.ee.futu.booking.domain.booking;
+package ee.futu.booking.domain.booking;
 
-public class BookingRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface BookingRepository extends JpaRepository<Booking, Long> {
 }

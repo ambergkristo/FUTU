@@ -1,4 +1,6 @@
-package main.ee.futu.booking.domain.payment;
+package ee.futu.booking.domain.payment;
 
-public class PaymentRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface PaymentRepository extends JpaRepository<Payment, Long> {
 }

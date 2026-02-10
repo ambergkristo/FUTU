@@ -1,4 +1,4 @@
-package main.ee.futu.booking.web;
+package ee.futu.booking.web;
 
 public class AvailabilityController {
 }

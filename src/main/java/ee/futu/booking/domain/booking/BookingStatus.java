@@ -1,4 +1,9 @@
-package main.ee.futu.booking.domain.booking;
+package ee.futu.booking.domain.booking;
 
-public class BookingStatus {
+public enum BookingStatus {
+    CREATED,
+    CONFIRMED,
+    CANCELLED,
+    COMPLETED,
+    NO_SHOW
 }

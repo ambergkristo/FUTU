@@ -1,4 +1,4 @@
-package main.ee.futu.booking.util;
+package ee.futu.booking.util;
 
 public class WeekdayMapper {
 }

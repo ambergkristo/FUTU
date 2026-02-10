@@ -1,4 +1,6 @@
-package main.ee.futu.booking.domain.slot;
+package ee.futu.booking.domain.slot;
 
-public class SlotTemplateRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface SlotTemplateRepository extends JpaRepository<SlotTemplate, Long> {
 }
