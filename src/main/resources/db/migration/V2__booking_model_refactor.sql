@@ -6,7 +6,7 @@ ALTER TABLE booking ADD COLUMN start_time TIME;
 ALTER TABLE booking ADD COLUMN end_time TIME;
 
 -- Make slot_template_id nullable first
-ALTER TABLE booking ALTER COLUMN slot_template_id BIGINT NULL;
+ALTER TABLE booking ALTER COLUMN slot_template_id DROP NOT NULL;
 
 -- Migrate data from slot_template to booking columns
 UPDATE booking b 
@@ -22,8 +22,8 @@ end_time = (
 );
 
 -- Make new columns not nullable after data migration
-ALTER TABLE booking ALTER COLUMN start_time TIME NOT NULL;
-ALTER TABLE booking ALTER COLUMN end_time TIME NOT NULL;
+ALTER TABLE booking ALTER COLUMN start_time SET NOT NULL;
+ALTER TABLE booking ALTER COLUMN end_time SET NOT NULL;
 
 -- Add new unique constraint (keep old one to avoid conflicts)
 ALTER TABLE booking ADD CONSTRAINT uk_booking_room_date_start_time UNIQUE (room_id, booking_date, start_time);

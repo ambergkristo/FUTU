@@ -12,7 +12,7 @@ interface RoomDetailModalProps {
 
 const RoomDetailModal: React.FC<RoomDetailModalProps> = ({ isOpen, onClose, roomId }) => {
   const roomName = ROOM_NAMES[roomId];
-  
+
   // Room-specific content
   const roomContent = {
     [ROOM_IDS.VR]: {
@@ -84,7 +84,12 @@ const RoomDetailModal: React.FC<RoomDetailModalProps> = ({ isOpen, onClose, room
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={roomName}>
+    <Modal
+      open={isOpen}
+      title={roomName}
+      onClose={onClose}
+      maxWidthClassName="max-w-2xl"
+    >
       <div className="space-y-6">
         {/* Image placeholder */}
         <div className="h-48 bg-gradient-to-br from-cyan-500/20 to-blue-600/20 rounded-lg flex items-center justify-center">
