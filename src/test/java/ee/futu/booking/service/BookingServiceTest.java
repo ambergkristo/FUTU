@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -105,7 +106,7 @@ class BookingServiceTest {
         when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
 
         // When & Then
-        assertThrows(ResponseStatusException.class, 
+        assertThrows(ResponseStatusException.class,
                 () -> bookingService.createBooking(request));
     }
 
@@ -134,7 +135,7 @@ class BookingServiceTest {
                 .thenReturn(Arrays.asList(existingBooking));
 
         // When & Then
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, 
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
                 () -> bookingService.createBooking(request));
         assertThat(exception.getReason()).isEqualTo("BOOKING_OVERLAP");
     }
@@ -247,7 +248,7 @@ class BookingServiceTest {
         when(bookingRepository.findById(1L)).thenReturn(Optional.of(existingBooking));
 
         // When & Then
-        assertThrows(ResponseStatusException.class, 
+        assertThrows(ResponseStatusException.class,
                 () -> bookingService.rescheduleBooking(1L, rescheduleRequest));
     }
 
@@ -280,7 +281,7 @@ class BookingServiceTest {
                 .thenReturn(Arrays.asList(conflictingBooking));
 
         // When & Then
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, 
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
                 () -> bookingService.rescheduleBooking(1L, rescheduleRequest));
         assertThat(exception.getReason()).isEqualTo("BOOKING_OVERLAP");
     }
@@ -295,7 +296,7 @@ class BookingServiceTest {
         when(bookingRepository.findById(1L)).thenReturn(Optional.empty());
 
         // When & Then
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, 
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
                 () -> bookingService.rescheduleBooking(1L, rescheduleRequest));
         assertThat(exception.getReason()).isEqualTo("Booking not found");
     }
@@ -318,7 +319,7 @@ class BookingServiceTest {
         when(bookingRepository.findById(1L)).thenReturn(Optional.of(cancelledBooking));
 
         // When & Then
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, 
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
                 () -> bookingService.rescheduleBooking(1L, rescheduleRequest));
         assertThat(exception.getReason()).isEqualTo("BOOKING_NOT_RESCHEDULABLE");
     }
@@ -370,7 +371,7 @@ class BookingServiceTest {
         when(bookingRepository.findById(1L)).thenReturn(Optional.empty());
 
         // When & Then
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, 
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
                 () -> bookingService.cancelBooking(1L));
         assertThat(exception.getReason()).isEqualTo("Booking not found");
     }
@@ -394,5 +395,98 @@ class BookingServiceTest {
 
         // Then - verify booking was saved with CANCELLED status
         assertThat(existingBooking.getStatus()).isEqualTo(BookingStatus.CANCELLED);
+    }
+
+    @Test
+    void listBookings_returnsBookingsSortedByStartTime() {
+        // Given
+        Booking booking1 = new Booking();
+        booking1.setId(1L);
+        booking1.setRoom(room);
+        booking1.setBookingDate(mondayDate);
+        booking1.setStartTime(LocalTime.of(19, 0));
+        booking1.setEndTime(LocalTime.of(21, 30));
+        booking1.setStatus(BookingStatus.CONFIRMED);
+        booking1.setCustomerName("User 1");
+        booking1.setCustomerEmail("user1@example.com");
+        booking1.setCustomerPhone("+3725000001");
+
+        Booking booking2 = new Booking();
+        booking2.setId(2L);
+        booking2.setRoom(room);
+        booking2.setBookingDate(mondayDate);
+        booking2.setStartTime(LocalTime.of(16, 0));
+        booking2.setEndTime(LocalTime.of(18, 30));
+        booking2.setStatus(BookingStatus.CANCELLED);
+        booking2.setCustomerName("User 2");
+        booking2.setCustomerEmail("user2@example.com");
+        booking2.setCustomerPhone("+3725000002");
+
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
+        when(bookingRepository.findByRoomIdAndBookingDateOrderByStartTime(roomId, mondayDate))
+                .thenReturn(Arrays.asList(booking2, booking1)); // Pre-sorted by startTime
+
+        // When
+        var responses = bookingService.listBookings(roomId, mondayDate);
+
+        // Then
+        assertThat(responses).hasSize(2);
+
+        // First booking (16:00)
+        assertThat(responses.get(0).getId()).isEqualTo(2L);
+        assertThat(responses.get(0).getStatus()).isEqualTo("CANCELLED");
+        assertThat(responses.get(0).getStartTime()).isEqualTo(LocalTime.of(16, 0));
+        assertThat(responses.get(0).getCustomerName()).isEqualTo("User 2");
+
+        // Second booking (19:00)
+        assertThat(responses.get(1).getId()).isEqualTo(1L);
+        assertThat(responses.get(1).getStatus()).isEqualTo("CONFIRMED");
+        assertThat(responses.get(1).getStartTime()).isEqualTo(LocalTime.of(19, 0));
+        assertThat(responses.get(1).getCustomerName()).isEqualTo("User 1");
+    }
+
+    @Test
+    void listBookings_includesCancelledAndConfirmed() {
+        // Given
+        Booking confirmedBooking = new Booking();
+        confirmedBooking.setId(1L);
+        confirmedBooking.setRoom(room);
+        confirmedBooking.setBookingDate(mondayDate);
+        confirmedBooking.setStartTime(LocalTime.of(16, 0));
+        confirmedBooking.setEndTime(LocalTime.of(18, 30));
+        confirmedBooking.setStatus(BookingStatus.CONFIRMED);
+        confirmedBooking.setCustomerName("User 1");
+
+        Booking cancelledBooking = new Booking();
+        cancelledBooking.setId(2L);
+        cancelledBooking.setRoom(room);
+        cancelledBooking.setBookingDate(mondayDate);
+        cancelledBooking.setStartTime(LocalTime.of(19, 0));
+        cancelledBooking.setEndTime(LocalTime.of(21, 30));
+        cancelledBooking.setStatus(BookingStatus.CANCELLED);
+        cancelledBooking.setCustomerName("User 2");
+
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
+        when(bookingRepository.findByRoomIdAndBookingDateOrderByStartTime(roomId, mondayDate))
+                .thenReturn(Arrays.asList(confirmedBooking, cancelledBooking));
+
+        // When
+        var responses = bookingService.listBookings(roomId, mondayDate);
+
+        // Then
+        assertThat(responses).hasSize(2);
+        assertThat(responses).extracting("status").containsExactlyInAnyOrder("CONFIRMED", "CANCELLED");
+        assertThat(responses).extracting("customerName").containsExactlyInAnyOrder("User 1", "User 2");
+    }
+
+    @Test
+    void listBookings_roomNotFound_throwsException() {
+        // Given
+        when(roomRepository.findById(roomId)).thenReturn(Optional.empty());
+
+        // When & Then
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+                () -> bookingService.listBookings(roomId, mondayDate));
+        assertThat(exception.getReason()).isEqualTo("Room not found");
     }
 }

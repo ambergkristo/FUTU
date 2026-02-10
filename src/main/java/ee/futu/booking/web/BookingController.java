@@ -2,9 +2,13 @@ package ee.futu.booking.web;
 
 import ee.futu.booking.service.BookingService;
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -33,5 +37,13 @@ public class BookingController {
             @Valid @RequestBody RescheduleRequest request) {
         BookingResponse response = bookingService.rescheduleBooking(id, request);
         return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<BookingResponse>> listBookings(
+            @RequestParam Long roomId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        List<BookingResponse> bookings = bookingService.listBookings(roomId, date);
+        return ResponseEntity.ok(bookings);
     }
 }

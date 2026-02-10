@@ -16,6 +16,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.*;
 
@@ -110,6 +111,20 @@ public class BookingService {
         booking = bookingRepository.save(booking);
         
         return mapToResponse(booking);
+    }
+
+    public List<BookingResponse> listBookings(Long roomId, LocalDate date) {
+        // Validate room exists
+        roomRepository.findById(roomId)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Room not found"));
+        
+        // Fetch all bookings for the room and date (includes all statuses)
+        List<Booking> bookings = bookingRepository.findByRoomIdAndBookingDateOrderByStartTime(roomId, date);
+        
+        // Map to response DTOs
+        return bookings.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 
     private void validateSlotTime(LocalDate date, LocalTime startTime) {
