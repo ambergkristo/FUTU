@@ -1,30 +1,13 @@
-### IntelliJ IDEA ###
-out/
-!**/src/main/**/out/
-!**/src/test/**/out/
-.kotlin
+﻿# Maven
+/target/
 
-### Eclipse ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
+# IntelliJ IDEA
+/.idea/
+*.iml
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
+# Maven wrapper
+/.mvn/
 
-### VS Code ###
-.vscode/
-
-### Mac OS ###
-.DS_Store
+# Spring config (secrets)
+/src/main/resources/application-local.yml
+/src/main/resources/application*.yml
