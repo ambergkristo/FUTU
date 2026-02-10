@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { et } from '../copy/et';
+import { useLang } from '../i18n/I18nContext';
+import { getUi } from '../copy/ui';
 
 interface FeatureGridProps {
   features?: Array<{
@@ -10,7 +11,10 @@ interface FeatureGridProps {
   }>;
 }
 
-const FeatureGrid: React.FC<FeatureGridProps> = ({ features = et.whyFutu.features }) => {
+const FeatureGrid: React.FC<FeatureGridProps> = ({ features }) => {
+  const { lang } = useLang();
+  const ui = getUi(lang);
+  const featuresData = features || ui.features.items;
   const fadeInUpVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0 }
@@ -40,10 +44,10 @@ const FeatureGrid: React.FC<FeatureGridProps> = ({ features = et.whyFutu.feature
           className="text-4xl font-bold text-center mb-16"
           variants={fadeInUpVariants}
         >
-          {et.whyFutu.title}
+          {ui.features.title}
         </motion.h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {features.map((feature, index) => (
+          {featuresData.map((feature, index) => (
             <motion.div
               key={index}
               variants={fadeInUpVariants}

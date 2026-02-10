@@ -1,5 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useLang } from '../i18n/I18nContext';
+import { getUi } from '../copy/ui';
 import { et } from '../copy/et';
 
 interface FoodSectionProps {
@@ -17,6 +19,8 @@ const FoodSection: React.FC<FoodSectionProps> = ({
   pizzas = et.pizza.menu.pizzas,
   drinks = et.pizza.menu.drinks
 }) => {
+  const { lang } = useLang();
+  const ui = getUi(lang);
   const fadeInUpVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0 }
@@ -46,13 +50,13 @@ const FoodSection: React.FC<FoodSectionProps> = ({
           className="text-4xl font-bold text-center mb-4"
           variants={fadeInUpVariants}
         >
-          {et.pizza.title}
+          {ui.pizza.title}
         </motion.h2>
         <motion.p
           className="text-xl text-center text-cyan-400 mb-16 max-w-3xl mx-auto"
           variants={fadeInUpVariants}
         >
-          {et.pizza.subtitle}
+          {ui.pizza.subtitle}
         </motion.p>
         <div className="grid md:grid-cols-2 gap-12">
           <motion.div variants={fadeInUpVariants}>

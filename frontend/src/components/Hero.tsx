@@ -1,9 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { et } from '../copy/et';
+import { useLang } from '../i18n/I18nContext';
+import { getUi } from '../copy/ui';
 
 const Hero: React.FC = () => {
+  const { lang } = useLang();
+  const ui = getUi(lang);
+
   const fadeInUpVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0 }
@@ -24,7 +28,7 @@ const Hero: React.FC = () => {
           variants={fadeInUpVariants}
         >
           <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
-            {et.hero.headline}
+            {ui.hero.title}
           </span>
         </motion.h1>
         <motion.p
@@ -32,14 +36,14 @@ const Hero: React.FC = () => {
           variants={fadeInUpVariants}
           transition={{ delay: 0.2 }}
         >
-          {et.hero.subheadline}
+          {ui.hero.subtitle}
         </motion.p>
         <motion.p
           className="text-sm text-cyan-400 mb-8"
           variants={fadeInUpVariants}
           transition={{ delay: 0.3 }}
         >
-          {et.hero.pizzaNote}
+          {ui.pizza.subtitle}
         </motion.p>
         <motion.div
           className="flex flex-col sm:flex-row gap-4 justify-center"
@@ -50,7 +54,7 @@ const Hero: React.FC = () => {
             to="/booking"
             className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white px-8 py-4 rounded-lg font-semibold text-lg shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all duration-200 transform hover:scale-105"
           >
-            {et.hero.bookBirthday}
+            {ui.hero.ctaBook}
           </Link>
           <button
             onClick={() => {
@@ -61,7 +65,7 @@ const Hero: React.FC = () => {
             }}
             className="border border-slate-600 hover:border-cyan-400 text-slate-300 hover:text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-200 backdrop-blur-sm bg-slate-800/50 hover:bg-slate-700/50"
           >
-            {et.hero.viewRooms}
+            {ui.hero.ctaRooms}
           </button>
         </motion.div>
       </div>

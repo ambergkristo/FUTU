@@ -1,12 +1,16 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { et } from '../copy/et';
+import { useLang } from '../i18n/I18nContext';
+import { getUi } from '../copy/ui';
 
 interface FooterProps {
   scrollToSection: (sectionId: string) => void;
 }
 
 const Footer: React.FC<FooterProps> = ({ scrollToSection }) => {
+  const { lang } = useLang();
+  const ui = getUi(lang);
+
   return (
     <footer className="bg-slate-900 border-t border-slate-800 py-12 px-4">
       <div className="max-w-7xl mx-auto">
@@ -16,29 +20,29 @@ const Footer: React.FC<FooterProps> = ({ scrollToSection }) => {
               FUTU
             </h4>
             <p className="text-slate-400 text-sm">
-              {et.footer.description}
+              {ui.footer.tagline}
             </p>
           </div>
           <div>
-            <h4 className="font-semibold text-cyan-400 mb-4">{et.footer.quickLinks}</h4>
+            <h4 className="font-semibold text-cyan-400 mb-4">{ui.footer.quickLinks}</h4>
             <ul className="space-y-2 text-slate-400 text-sm">
-              <li><button onClick={() => scrollToSection('about')} className="hover:text-cyan-400 transition-colors">{et.footer.links.about}</button></li>
-              <li><button onClick={() => scrollToSection('rooms')} className="hover:text-cyan-400 transition-colors">{et.footer.links.rooms}</button></li>
-              <li><button onClick={() => scrollToSection('pricing')} className="hover:text-cyan-400 transition-colors">{et.footer.links.pricing}</button></li>
-              <li><Link to="/booking" className="hover:text-cyan-400 transition-colors">{et.footer.links.book}</Link></li>
+              <li><button onClick={() => scrollToSection('about')} className="hover:text-cyan-400 transition-colors">{ui.footer.links.about}</button></li>
+              <li><button onClick={() => scrollToSection('rooms')} className="hover:text-cyan-400 transition-colors">{ui.footer.links.rooms}</button></li>
+              <li><button onClick={() => scrollToSection('pricing')} className="hover:text-cyan-400 transition-colors">{ui.footer.links.pricing}</button></li>
+              <li><Link to="/booking" className="hover:text-cyan-400 transition-colors">{ui.footer.links.book}</Link></li>
             </ul>
           </div>
           <div>
-            <h4 className="font-semibold text-cyan-400 mb-4">{et.footer.legal}</h4>
+            <h4 className="font-semibold text-cyan-400 mb-4">{ui.footer.legal}</h4>
             <ul className="space-y-2 text-slate-400 text-sm">
-              <li><a href="#" className="hover:text-cyan-400 transition-colors">{et.footer.links.privacy}</a></li>
-              <li><a href="#" className="hover:text-cyan-400 transition-colors">{et.footer.links.terms}</a></li>
-              <li><a href="#" className="hover:text-cyan-400 transition-colors">{et.footer.links.cookies}</a></li>
-              <li><a href="#" className="hover:text-cyan-400 transition-colors">{et.footer.links.refund}</a></li>
+              <li><a href="#" className="hover:text-cyan-400 transition-colors">{ui.footer.links.privacy}</a></li>
+              <li><a href="#" className="hover:text-cyan-400 transition-colors">{ui.footer.links.terms}</a></li>
+              <li><a href="#" className="hover:text-cyan-400 transition-colors">{ui.footer.links.cookies}</a></li>
+              <li><a href="#" className="hover:text-cyan-400 transition-colors">{ui.footer.links.refund}</a></li>
             </ul>
           </div>
           <div>
-            <h4 className="font-semibold text-cyan-400 mb-4">{et.footer.followUs}</h4>
+            <h4 className="font-semibold text-cyan-400 mb-4">{ui.footer.socialLabel}</h4>
             <div className="flex space-x-4">
               {['Facebook', 'Instagram', 'Discord'].map((social) => (
                 <a
@@ -53,7 +57,7 @@ const Footer: React.FC<FooterProps> = ({ scrollToSection }) => {
           </div>
         </div>
         <div className="border-t border-slate-800 mt-8 pt-8 text-center text-slate-400 text-sm">
-          <p>{et.footer.copyright}</p>
+          <p>{ui.footer.copyright}</p>
         </div>
       </div>
     </footer>
