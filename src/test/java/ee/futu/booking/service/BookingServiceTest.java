@@ -6,6 +6,7 @@ import ee.futu.booking.domain.booking.BookingStatus;
 import ee.futu.booking.domain.room.Room;
 import ee.futu.booking.domain.room.RoomRepository;
 import ee.futu.booking.web.BookingRequest;
+import ee.futu.booking.web.RescheduleRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -104,7 +105,7 @@ class BookingServiceTest {
         when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
 
         // When & Then
-        assertThrows(ResponseStatusException.class,
+        assertThrows(ResponseStatusException.class, 
                 () -> bookingService.createBooking(request));
     }
 
@@ -133,7 +134,7 @@ class BookingServiceTest {
                 .thenReturn(Arrays.asList(existingBooking));
 
         // When & Then
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, 
                 () -> bookingService.createBooking(request));
         assertThat(exception.getReason()).isEqualTo("BOOKING_OVERLAP");
     }
@@ -193,6 +194,136 @@ class BookingServiceTest {
     }
 
     @Test
+    void rescheduleBooking_happyPath_updatesSlotAndPrice() {
+        // Given - existing confirmed booking on Monday 16:00
+        Booking existingBooking = new Booking();
+        existingBooking.setId(1L);
+        existingBooking.setRoom(room);
+        existingBooking.setBookingDate(mondayDate);
+        existingBooking.setStartTime(LocalTime.of(16, 0));
+        existingBooking.setEndTime(LocalTime.of(18, 30));
+        existingBooking.setStatus(BookingStatus.CONFIRMED);
+        existingBooking.setCustomerName("Test User");
+        existingBooking.setCustomerEmail("test@example.com");
+        existingBooking.setCustomerPhone("+3725000000");
+
+        RescheduleRequest rescheduleRequest = new RescheduleRequest();
+        rescheduleRequest.setDate(fridayDate); // Move to Friday
+        rescheduleRequest.setStartTime(LocalTime.of(19, 0)); // Different slot
+
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(existingBooking));
+        when(bookingRepository.findByRoomIdAndBookingDateAndStatusIn(eq(roomId), eq(fridayDate), any()))
+                .thenReturn(Collections.emptyList());
+        when(bookingRepository.save(any(Booking.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // When
+        var response = bookingService.rescheduleBooking(1L, rescheduleRequest);
+
+        // Then
+        assertThat(response.getId()).isEqualTo(1L);
+        assertThat(response.getStatus()).isEqualTo("CONFIRMED");
+        assertThat(response.getDate()).isEqualTo(fridayDate);
+        assertThat(response.getStartTime()).isEqualTo(LocalTime.of(19, 0));
+        assertThat(response.getEndTime()).isEqualTo(LocalTime.of(21, 30));
+        assertThat(response.getPriceCents()).isEqualTo(26000); // Friday pricing
+        assertThat(response.getCustomerName()).isEqualTo("Test User");
+    }
+
+    @Test
+    void rescheduleBooking_invalidSlotTime_throwsException() {
+        // Given
+        Booking existingBooking = new Booking();
+        existingBooking.setId(1L);
+        existingBooking.setRoom(room);
+        existingBooking.setBookingDate(mondayDate);
+        existingBooking.setStartTime(LocalTime.of(16, 0));
+        existingBooking.setEndTime(LocalTime.of(18, 30));
+        existingBooking.setStatus(BookingStatus.CONFIRMED);
+
+        RescheduleRequest rescheduleRequest = new RescheduleRequest();
+        rescheduleRequest.setDate(mondayDate);
+        rescheduleRequest.setStartTime(LocalTime.of(10, 0)); // Invalid for Monday
+
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(existingBooking));
+
+        // When & Then
+        assertThrows(ResponseStatusException.class, 
+                () -> bookingService.rescheduleBooking(1L, rescheduleRequest));
+    }
+
+    @Test
+    void rescheduleBooking_conflict_throwsException() {
+        // Given
+        Booking existingBooking = new Booking();
+        existingBooking.setId(1L);
+        existingBooking.setRoom(room);
+        existingBooking.setBookingDate(mondayDate);
+        existingBooking.setStartTime(LocalTime.of(16, 0));
+        existingBooking.setEndTime(LocalTime.of(18, 30));
+        existingBooking.setStatus(BookingStatus.CONFIRMED);
+
+        // Another booking that conflicts with new slot
+        Booking conflictingBooking = new Booking();
+        conflictingBooking.setId(2L);
+        conflictingBooking.setRoom(room);
+        conflictingBooking.setBookingDate(mondayDate);
+        conflictingBooking.setStartTime(LocalTime.of(19, 0));
+        conflictingBooking.setEndTime(LocalTime.of(21, 30));
+        conflictingBooking.setStatus(BookingStatus.CONFIRMED);
+
+        RescheduleRequest rescheduleRequest = new RescheduleRequest();
+        rescheduleRequest.setDate(mondayDate);
+        rescheduleRequest.setStartTime(LocalTime.of(19, 0)); // Conflicts with existing
+
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(existingBooking));
+        when(bookingRepository.findByRoomIdAndBookingDateAndStatusIn(eq(roomId), eq(mondayDate), any()))
+                .thenReturn(Arrays.asList(conflictingBooking));
+
+        // When & Then
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, 
+                () -> bookingService.rescheduleBooking(1L, rescheduleRequest));
+        assertThat(exception.getReason()).isEqualTo("BOOKING_OVERLAP");
+    }
+
+    @Test
+    void rescheduleBooking_notFound_throwsException() {
+        // Given
+        RescheduleRequest rescheduleRequest = new RescheduleRequest();
+        rescheduleRequest.setDate(mondayDate);
+        rescheduleRequest.setStartTime(LocalTime.of(16, 0));
+
+        when(bookingRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // When & Then
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, 
+                () -> bookingService.rescheduleBooking(1L, rescheduleRequest));
+        assertThat(exception.getReason()).isEqualTo("Booking not found");
+    }
+
+    @Test
+    void rescheduleBooking_cancelledBooking_throwsException() {
+        // Given
+        Booking cancelledBooking = new Booking();
+        cancelledBooking.setId(1L);
+        cancelledBooking.setRoom(room);
+        cancelledBooking.setBookingDate(mondayDate);
+        cancelledBooking.setStartTime(LocalTime.of(16, 0));
+        cancelledBooking.setEndTime(LocalTime.of(18, 30));
+        cancelledBooking.setStatus(BookingStatus.CANCELLED);
+
+        RescheduleRequest rescheduleRequest = new RescheduleRequest();
+        rescheduleRequest.setDate(mondayDate);
+        rescheduleRequest.setStartTime(LocalTime.of(19, 0));
+
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(cancelledBooking));
+
+        // When & Then
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, 
+                () -> bookingService.rescheduleBooking(1L, rescheduleRequest));
+        assertThat(exception.getReason()).isEqualTo("BOOKING_NOT_RESCHEDULABLE");
+    }
+
+    @Test
     void cancelBooking_confirmedBooking_marksAsCancelled() {
         // Given
         Booking existingBooking = new Booking();
@@ -239,7 +370,7 @@ class BookingServiceTest {
         when(bookingRepository.findById(1L)).thenReturn(Optional.empty());
 
         // When & Then
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, 
                 () -> bookingService.cancelBooking(1L));
         assertThat(exception.getReason()).isEqualTo("Booking not found");
     }

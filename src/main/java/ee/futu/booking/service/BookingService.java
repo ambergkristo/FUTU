@@ -7,6 +7,7 @@ import ee.futu.booking.domain.room.Room;
 import ee.futu.booking.domain.room.RoomRepository;
 import ee.futu.booking.web.BookingRequest;
 import ee.futu.booking.web.BookingResponse;
+import ee.futu.booking.web.RescheduleRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -78,6 +79,39 @@ public class BookingService {
         bookingRepository.save(booking);
     }
 
+    @Transactional
+    public BookingResponse rescheduleBooking(Long bookingId, RescheduleRequest request) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Booking not found"));
+        
+        // Only CONFIRMED bookings can be rescheduled
+        if (booking.getStatus() != BookingStatus.CONFIRMED) {
+            throw new ResponseStatusException(BAD_REQUEST, "BOOKING_NOT_RESCHEDULABLE");
+        }
+        
+        // Validate new slot time
+        validateSlotTime(request.getDate(), request.getStartTime());
+        
+        // Compute new endTime and price
+        LocalTime newEndTime = SlotRules.getEndTime(request.getStartTime());
+        int newPriceCents = SlotRules.priceCentsFor(request.getDate());
+        
+        // Check for conflicts (exclude current booking)
+        if (hasConflictExcluding(booking.getId(), booking.getRoom().getId(), request.getDate(), request.getStartTime(), newEndTime)) {
+            throw new ResponseStatusException(CONFLICT, "BOOKING_OVERLAP");
+        }
+        
+        // Update booking
+        booking.setBookingDate(request.getDate());
+        booking.setStartTime(request.getStartTime());
+        booking.setEndTime(newEndTime);
+        booking.setTotalPriceCents(newPriceCents);
+        
+        booking = bookingRepository.save(booking);
+        
+        return mapToResponse(booking);
+    }
+
     private void validateSlotTime(LocalDate date, LocalTime startTime) {
         List<SlotRules.SlotDef> allowedSlots = SlotRules.allowedSlotsFor(date);
         
@@ -94,6 +128,15 @@ public class BookingService {
                 roomId, date, Arrays.asList(BookingStatus.CONFIRMED));
         
         return existingBookings.stream()
+                .anyMatch(booking -> hasOverlap(startTime, endTime, booking));
+    }
+
+    private boolean hasConflictExcluding(Long excludeBookingId, Long roomId, LocalDate date, LocalTime startTime, LocalTime endTime) {
+        List<Booking> existingBookings = bookingRepository.findByRoomIdAndBookingDateAndStatusIn(
+                roomId, date, Arrays.asList(BookingStatus.CONFIRMED));
+        
+        return existingBookings.stream()
+                .filter(booking -> !booking.getId().equals(excludeBookingId))
                 .anyMatch(booking -> hasOverlap(startTime, endTime, booking));
     }
 

@@ -27,4 +27,11 @@ public class BookingController {
         bookingService.cancelBooking(id);
         return ResponseEntity.ok().build();
     }
+
+    @PatchMapping("/{id}/reschedule")
+    public ResponseEntity<BookingResponse> rescheduleBooking(@PathVariable Long id,
+            @Valid @RequestBody RescheduleRequest request) {
+        BookingResponse response = bookingService.rescheduleBooking(id, request);
+        return ResponseEntity.ok().body(response);
+    }
 }
