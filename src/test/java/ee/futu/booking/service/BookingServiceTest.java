@@ -6,7 +6,6 @@ import ee.futu.booking.domain.booking.BookingStatus;
 import ee.futu.booking.domain.room.Room;
 import ee.futu.booking.domain.room.RoomRepository;
 import ee.futu.booking.web.BookingRequest;
-import ee.futu.booking.web.BookingResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -105,7 +104,7 @@ class BookingServiceTest {
         when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
 
         // When & Then
-        assertThrows(ResponseStatusException.class, 
+        assertThrows(ResponseStatusException.class,
                 () -> bookingService.createBooking(request));
     }
 
@@ -134,7 +133,7 @@ class BookingServiceTest {
                 .thenReturn(Arrays.asList(existingBooking));
 
         // When & Then
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, 
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
                 () -> bookingService.createBooking(request));
         assertThat(exception.getReason()).isEqualTo("BOOKING_OVERLAP");
     }
@@ -191,5 +190,78 @@ class BookingServiceTest {
 
         // Then
         assertThat(response.getPriceCents()).isEqualTo(21000); // Monday pricing
+    }
+
+    @Test
+    void cancelBooking_confirmedBooking_marksAsCancelled() {
+        // Given
+        Booking existingBooking = new Booking();
+        existingBooking.setId(1L);
+        existingBooking.setRoom(room);
+        existingBooking.setBookingDate(mondayDate);
+        existingBooking.setStartTime(LocalTime.of(16, 0));
+        existingBooking.setEndTime(LocalTime.of(18, 30));
+        existingBooking.setStatus(BookingStatus.CONFIRMED);
+
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(existingBooking));
+        when(bookingRepository.save(any(Booking.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // When
+        bookingService.cancelBooking(1L);
+
+        // Then
+        assertThat(existingBooking.getStatus()).isEqualTo(BookingStatus.CANCELLED);
+    }
+
+    @Test
+    void cancelBooking_alreadyCancelled_isIdempotent() {
+        // Given
+        Booking existingBooking = new Booking();
+        existingBooking.setId(1L);
+        existingBooking.setRoom(room);
+        existingBooking.setBookingDate(mondayDate);
+        existingBooking.setStartTime(LocalTime.of(16, 0));
+        existingBooking.setEndTime(LocalTime.of(18, 30));
+        existingBooking.setStatus(BookingStatus.CANCELLED);
+
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(existingBooking));
+
+        // When
+        bookingService.cancelBooking(1L);
+
+        // Then - should not throw exception and status remains CANCELLED
+        assertThat(existingBooking.getStatus()).isEqualTo(BookingStatus.CANCELLED);
+    }
+
+    @Test
+    void cancelBooking_notFound_throwsException() {
+        // Given
+        when(bookingRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // When & Then
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+                () -> bookingService.cancelBooking(1L));
+        assertThat(exception.getReason()).isEqualTo("Booking not found");
+    }
+
+    @Test
+    void cancelBooking_releasesAvailability_forNewBooking() {
+        // Given - existing confirmed booking
+        Booking existingBooking = new Booking();
+        existingBooking.setId(1L);
+        existingBooking.setRoom(room);
+        existingBooking.setBookingDate(mondayDate);
+        existingBooking.setStartTime(LocalTime.of(16, 0));
+        existingBooking.setEndTime(LocalTime.of(18, 30));
+        existingBooking.setStatus(BookingStatus.CONFIRMED);
+
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(existingBooking));
+        when(bookingRepository.save(any(Booking.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // When - cancel the booking
+        bookingService.cancelBooking(1L);
+
+        // Then - verify booking was saved with CANCELLED status
+        assertThat(existingBooking.getStatus()).isEqualTo(BookingStatus.CANCELLED);
     }
 }

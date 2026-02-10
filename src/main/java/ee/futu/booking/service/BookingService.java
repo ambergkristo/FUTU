@@ -64,6 +64,20 @@ public class BookingService {
         return mapToResponse(booking);
     }
 
+    @Transactional
+    public void cancelBooking(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Booking not found"));
+        
+        // Idempotent: if already cancelled, do nothing
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
+            return;
+        }
+        
+        booking.setStatus(BookingStatus.CANCELLED);
+        bookingRepository.save(booking);
+    }
+
     private void validateSlotTime(LocalDate date, LocalTime startTime) {
         List<SlotRules.SlotDef> allowedSlots = SlotRules.allowedSlotsFor(date);
         
