@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Button from '../components/Button';
-import { ROOM_IDS, ROOM_NAMES } from '../constants/rooms';
+import type { RoomId } from '../types/room';
 
 interface Slot {
   startTime: string;
@@ -59,10 +59,12 @@ const Booking = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedDate, setSelectedDate] = useState('');
 
-  // Read roomId from query params, default to VR room (1) if not provided
+  // Read roomId from query params, validate it's 1-5, default to room 1 if not provided or invalid
   const roomIdParam = searchParams.get('roomId');
-  const initialRoomId = roomIdParam ? Number(roomIdParam) : ROOM_IDS.VR;
-  const [selectedRoomId, setSelectedRoomId] = useState(initialRoomId);
+  const parsedRoomId = roomIdParam ? parseInt(roomIdParam, 10) : 1;
+  const isValidRoomId = parsedRoomId >= 1 && parsedRoomId <= 5;
+  const initialRoomId: RoomId = isValidRoomId ? parsedRoomId as RoomId : 1;
+  const [selectedRoomId, setSelectedRoomId] = useState<RoomId>(initialRoomId);
 
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
   const [availableSlots, setAvailableSlots] = useState<Slot[]>([]);
@@ -368,19 +370,22 @@ const Booking = () => {
                   <select
                     value={selectedRoomId}
                     onChange={(e) => {
-                      setSelectedRoomId(Number(e.target.value));
-                      setSelectedSlot(null);
-                      if (selectedDate) {
-                        fetchAvailability();
+                      const newRoomId = Number(e.target.value);
+                      if (newRoomId >= 1 && newRoomId <= 5) {
+                        setSelectedRoomId(newRoomId as RoomId);
+                        setSelectedSlot(null);
+                        if (selectedDate) {
+                          fetchAvailability();
+                        }
                       }
                     }}
                     className="mt-2 w-full px-4 py-3 bg-glass-bg border border-glass-border rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                   >
-                    <option value={ROOM_IDS.VR}>{ROOM_NAMES[ROOM_IDS.VR]}</option>
-                    <option value={ROOM_IDS.COOKING}>{ROOM_NAMES[ROOM_IDS.COOKING]}</option>
-                    <option value={ROOM_IDS.ART}>{ROOM_NAMES[ROOM_IDS.ART]}</option>
-                    <option value={ROOM_IDS.TRAMPOLINE_1}>{ROOM_NAMES[ROOM_IDS.TRAMPOLINE_1]}</option>
-                    <option value={ROOM_IDS.TRAMPOLINE_2}>{ROOM_NAMES[ROOM_IDS.TRAMPOLINE_2]}</option>
+                    <option value={1}>VR Ruum</option>
+                    <option value={2}>Köögiruum</option>
+                    <option value={3}>Kunstituba</option>
+                    <option value={4}>Trampoliin 1</option>
+                    <option value={5}>Trampoliin 2</option>
                   </select>
                 </label>
 
