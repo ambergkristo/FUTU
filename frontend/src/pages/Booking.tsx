@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Button from '../components/Button';
+import { ROOM_IDS, ROOM_NAMES } from '../constants/rooms';
 
 interface Slot {
   startTime: string;
@@ -54,9 +55,15 @@ interface StartPaymentResponse {
 
 const Booking = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedDate, setSelectedDate] = useState('');
-  const [selectedRoomId, setSelectedRoomId] = useState(1); // Default to room 1
+
+  // Read roomId from query params, default to VR room (1) if not provided
+  const roomIdParam = searchParams.get('roomId');
+  const initialRoomId = roomIdParam ? Number(roomIdParam) : ROOM_IDS.VR;
+  const [selectedRoomId, setSelectedRoomId] = useState(initialRoomId);
+
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
   const [availableSlots, setAvailableSlots] = useState<Slot[]>([]);
   const [loading, setLoading] = useState(false);
@@ -369,9 +376,11 @@ const Booking = () => {
                     }}
                     className="mt-2 w-full px-4 py-3 bg-glass-bg border border-glass-border rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                   >
-                    <option value={1}>Ruum 1 - Peamine saal</option>
-                    <option value={2}>Ruum 2 - Väikene saal</option>
-                    <option value={3}>Ruum 3 - VIP ruum</option>
+                    <option value={ROOM_IDS.VR}>{ROOM_NAMES[ROOM_IDS.VR]}</option>
+                    <option value={ROOM_IDS.COOKING}>{ROOM_NAMES[ROOM_IDS.COOKING]}</option>
+                    <option value={ROOM_IDS.ART}>{ROOM_NAMES[ROOM_IDS.ART]}</option>
+                    <option value={ROOM_IDS.TRAMPOLINE_1}>{ROOM_NAMES[ROOM_IDS.TRAMPOLINE_1]}</option>
+                    <option value={ROOM_IDS.TRAMPOLINE_2}>{ROOM_NAMES[ROOM_IDS.TRAMPOLINE_2]}</option>
                   </select>
                 </label>
 
