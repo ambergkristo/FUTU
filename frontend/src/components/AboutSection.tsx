@@ -20,6 +20,7 @@ const AboutSection: React.FC = () => {
 
   return (
     <motion.section
+      id="about"
       className="py-20 px-4"
       initial="hidden"
       whileInView="visible"

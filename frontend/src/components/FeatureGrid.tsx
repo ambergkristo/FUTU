@@ -32,7 +32,7 @@ const FeatureGrid: React.FC<FeatureGridProps> = ({ features }) => {
 
   return (
     <motion.section
-      id="about"
+      id="features"
       className="py-20 px-4"
       initial="hidden"
       whileInView="visible"
