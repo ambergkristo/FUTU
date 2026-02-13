@@ -52,7 +52,7 @@ const FloatingCTA: React.FC = () => {
           <Link
             to="/booking"
             aria-label="Broneeri"
-            className={`group relative bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white px-6 py-3 rounded-full font-semibold shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all duration-200 transform hover:scale-105 flex items-center space-x-2 min-w-[44px] min-h-[44px] ${shouldPulse ? 'animate-pulse-glow' : ''
+            className={`cta-primary group relative rounded-full px-6 py-3 ${shouldPulse ? 'animate-pulse-glow' : ''
               }`}
           >
             {/* Glow effect */}

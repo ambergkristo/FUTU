@@ -104,14 +104,14 @@ const Modal: React.FC<ModalProps> = ({
   return (
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"
+            className="absolute inset-0 bg-slate-950/75 backdrop-blur-md"
             onClick={handleBackdropClick}
           />
 
@@ -127,19 +127,19 @@ const Modal: React.FC<ModalProps> = ({
               damping: 30,
               duration: 0.2
             }}
-            className={`relative w-full ${maxWidthClassName} max-h-[90vh] overflow-y-auto bg-slate-800/50 backdrop-blur-lg border border-slate-700/50 rounded-xl shadow-2xl shadow-cyan-500/10`}
+            className={`relative w-full ${maxWidthClassName} max-h-[88vh] overflow-y-auto rounded-2xl border border-cyan-300/15 bg-slate-900/78 shadow-[0_24px_70px_rgba(8,47,73,0.45)] backdrop-blur-xl`}
           >
             {/* Header */}
             {(title || showCloseButton) && (
-              <div className="flex items-center justify-between p-6 border-b border-slate-700/50">
+              <div className="flex items-center justify-between border-b border-slate-700/55 p-5 sm:p-6">
                 {title && (
-                  <h2 className="text-2xl font-bold text-cyan-400">{title}</h2>
+                  <h2 className="pr-4 text-2xl font-bold tracking-tight text-cyan-300">{title}</h2>
                 )}
                 {showCloseButton && (
                   <button
                     ref={closeButtonRef}
                     onClick={onClose}
-                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-700/50 hover:bg-slate-600/50 text-slate-400 hover:text-white transition-colors"
+                    className="focus-ring flex h-9 w-9 items-center justify-center rounded-lg border border-slate-600/70 bg-slate-800/70 text-slate-300 transition-colors hover:border-cyan-300/50 hover:text-white"
                     aria-label="Sulge"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -151,7 +151,7 @@ const Modal: React.FC<ModalProps> = ({
             )}
 
             {/* Content */}
-            <div className={title || showCloseButton ? "p-6" : "p-0"}>
+            <div className={title || showCloseButton ? "p-5 sm:p-6" : "p-0"}>
               {children}
             </div>
           </motion.div>

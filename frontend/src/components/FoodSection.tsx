@@ -51,26 +51,26 @@ const FoodSection: React.FC = () => {
   return (
     <motion.section
       id="pizza"
-      className="py-20 px-4 bg-slate-900/50"
+      className="section-shell section-shell-muted"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}
       variants={staggerContainer}
     >
-      <div className="max-w-7xl mx-auto">
+      <div className="section-inner">
         <motion.h2
-          className="text-4xl font-bold text-center mb-4"
+          className="section-title"
           variants={fadeInUpVariants}
         >
           FUTU Pizzeria
         </motion.h2>
         <motion.p
-          className="text-lg md:text-xl text-center text-cyan-300 mb-12 max-w-3xl mx-auto leading-relaxed"
+          className="section-subtitle text-cyan-200"
           variants={fadeInUpVariants}
         >
           Käsitööpizza FUTU aatriumis: saad lisada tellimuse sünnipäevapeole või tellida ka täiesti eraldi.
         </motion.p>
-        <div className="grid md:grid-cols-3 gap-5 md:gap-6">
+        <div className="grid gap-5 md:grid-cols-3 md:gap-6">
           {offerCards.map((card) => (
             <motion.article
               key={card.title}
@@ -95,7 +95,7 @@ const FoodSection: React.FC = () => {
         >
           <button
             onClick={() => setIsOrderModalOpen(true)}
-            className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white px-8 py-3 rounded-lg font-semibold shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/45 transition-all duration-200 transform hover:scale-105"
+            className="cta-primary px-8 py-3"
           >
             Telli pizza
           </button>
@@ -117,13 +117,13 @@ const FoodSection: React.FC = () => {
         <div className="flex flex-col sm:flex-row gap-3">
           <button
             onClick={scrollToBooking}
-            className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white px-5 py-3 rounded-lg font-semibold transition-all duration-200"
+            className="cta-primary flex-1 px-5 py-3"
           >
             Broneeri peoaeg
           </button>
           <button
             onClick={() => setIsOrderModalOpen(false)}
-            className="flex-1 border border-slate-600 hover:border-cyan-400 text-slate-300 hover:text-white px-5 py-3 rounded-lg font-semibold transition-all duration-200 bg-slate-800/50"
+            className="cta-secondary flex-1 px-5 py-3"
           >
             Sulge
           </button>
