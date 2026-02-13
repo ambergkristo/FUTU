@@ -25,12 +25,14 @@ const Modal: React.FC<ModalProps> = ({
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
+  const previousScrollYRef = useRef(0);
 
   // Focus management
   useEffect(() => {
     if (open) {
       // Store current focus
-      previousFocusRef.current = document.activeElement as HTMLElement;
+      const activeElement = document.activeElement;
+      previousFocusRef.current = activeElement instanceof HTMLElement ? activeElement : null;
 
       // Focus close button
       setTimeout(() => {
@@ -39,20 +41,39 @@ const Modal: React.FC<ModalProps> = ({
         }
       }, 100);
 
-      // Prevent body scroll
-      document.body.style.overflow = 'hidden';
+      // Prevent body scroll while preserving current scroll position.
+      previousScrollYRef.current = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${previousScrollYRef.current}px`;
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.width = '100%';
     } else {
       // Restore focus
       if (previousFocusRef.current) {
-        previousFocusRef.current.focus();
+        previousFocusRef.current.focus({ preventScroll: true });
       }
 
       // Restore body scroll
-      document.body.style.overflow = '';
+      const topValue = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.width = '';
+
+      const parsedTop = Number.parseInt(topValue || '0', 10);
+      const restoreY = Number.isNaN(parsedTop) ? previousScrollYRef.current : Math.abs(parsedTop);
+      window.scrollTo(0, restoreY);
     }
 
     return () => {
-      document.body.style.overflow = '';
+      if (!open) return;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.width = '';
     };
   }, [open, showCloseButton]);
 
