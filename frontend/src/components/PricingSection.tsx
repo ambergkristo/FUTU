@@ -2,17 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { et } from '../copy/et';
 
-interface PricingSectionProps {
-  plans?: Array<{
-    name: string;
-    weekdayPrice: string;
-    weekendPrice: string;
-    features: string[];
-    popular?: boolean;
-  }>;
-}
-
-const PricingSection: React.FC<PricingSectionProps> = ({ plans = et.pricing.packages }) => {
+const PricingSection: React.FC = () => {
   const fadeInUpVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0 }
@@ -44,43 +34,26 @@ const PricingSection: React.FC<PricingSectionProps> = ({ plans = et.pricing.pack
         >
           {et.pricing.title}
         </motion.h2>
-        <motion.p
-          className="text-center text-slate-300 mb-16"
+
+        <motion.div
           variants={fadeInUpVariants}
+          className="max-w-3xl mx-auto mt-10 rounded-2xl border border-slate-700/60 bg-slate-900/60 backdrop-blur-sm p-6 md:p-8 shadow-lg shadow-cyan-500/10"
         >
-          {et.pricing.duration}
-        </motion.p>
-        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {plans.map((plan, index) => (
-            <motion.div
-              key={index}
-              variants={fadeInUpVariants}
-              className={`bg-slate-800/50 backdrop-blur-sm border rounded-xl p-8 hover:border-cyan-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10 ${plan.popular ? 'border-cyan-500/50 shadow-lg shadow-cyan-500/20' : 'border-slate-700/50'
-                }`}
-            >
-              {plan.popular && (
-                <div className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-sm font-semibold px-3 py-1 rounded-full text-center mb-4">
-                  Populaarne
-                </div>
-              )}
-              <h3 className="text-2xl font-bold mb-4 text-cyan-400">{plan.name}</h3>
-              <div className="mb-6">
-                <div className="text-3xl font-bold text-blue-400">{plan.weekdayPrice}</div>
-                <div className="text-slate-400">E–N hind</div>
-                <div className="text-2xl font-bold text-slate-300 mt-2">{plan.weekendPrice}</div>
-                <div className="text-slate-400">R–P hind</div>
-              </div>
-              <ul className="space-y-3">
-                {plan.features.map((feature, idx) => (
-                  <li key={idx} className="text-slate-300 flex items-center">
-                    <span className="text-cyan-400 mr-2">✓</span>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-          ))}
-        </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="rounded-xl border border-slate-700/60 bg-slate-800/50 p-5 text-center">
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-400 mb-2">{'E\u2013N'}</p>
+              <p className="text-3xl md:text-4xl font-bold text-cyan-300">{'210 \u20AC'}</p>
+            </div>
+            <div className="rounded-xl border border-slate-700/60 bg-slate-800/50 p-5 text-center">
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-400 mb-2">{'R\u2013P'}</p>
+              <p className="text-3xl md:text-4xl font-bold text-blue-300">{'260 \u20AC'}</p>
+            </div>
+          </div>
+
+          <div className="mt-5 rounded-xl border border-cyan-500/20 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 px-4 py-3 text-center">
+            <p className="text-slate-100 font-semibold">150 min + 30 min puhverdus</p>
+          </div>
+        </motion.div>
       </div>
     </motion.section>
   );
