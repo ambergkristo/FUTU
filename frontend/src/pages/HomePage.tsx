@@ -24,7 +24,9 @@ const HomePage: React.FC = () => {
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      const navbarOffset = 96;
+      const targetPosition = element.getBoundingClientRect().top + window.scrollY - navbarOffset;
+      window.scrollTo({ top: Math.max(0, targetPosition), behavior: 'smooth' });
     }
   };
 
