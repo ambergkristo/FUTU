@@ -39,7 +39,9 @@ const HomePage: React.FC = () => {
       <Navbar scrollToSection={scrollToSection} />
       <Hero />
       <FeatureGrid />
-      <RoomsSection rooms={rooms} onBook={handleBook} />
+      <div id="booking">
+        <RoomsSection rooms={rooms} onBook={handleBook} />
+      </div>
       <PricingSection />
       <FoodSection />
       <HowItWorks />
