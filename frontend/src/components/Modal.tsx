@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useEffect, useId, useRef } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 
 type ModalProps = {
   open: boolean;
@@ -26,6 +26,23 @@ const Modal: React.FC<ModalProps> = ({
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const previousScrollYRef = useRef(0);
+  const titleId = useId();
+  const prefersReducedMotion = useReducedMotion();
+
+  const getFocusableElements = () => {
+    if (!modalRef.current) return [] as HTMLElement[];
+
+    const selector = [
+      'a[href]',
+      'button:not([disabled])',
+      'textarea:not([disabled])',
+      'input:not([disabled])',
+      'select:not([disabled])',
+      '[tabindex]:not([tabindex="-1"])'
+    ].join(', ');
+
+    return Array.from(modalRef.current.querySelectorAll<HTMLElement>(selector));
+  };
 
   // Focus management
   useEffect(() => {
@@ -34,11 +51,20 @@ const Modal: React.FC<ModalProps> = ({
       const activeElement = document.activeElement;
       previousFocusRef.current = activeElement instanceof HTMLElement ? activeElement : null;
 
-      // Focus close button
+      // Focus close button or first interactive element in modal.
       setTimeout(() => {
-        if (showCloseButton) {
-          closeButtonRef.current?.focus();
+        if (showCloseButton && closeButtonRef.current) {
+          closeButtonRef.current.focus();
+          return;
         }
+
+        const firstFocusable = getFocusableElements()[0];
+        if (firstFocusable) {
+          firstFocusable.focus();
+          return;
+        }
+
+        modalRef.current?.focus();
       }, 100);
 
       // Prevent body scroll while preserving current scroll position.
@@ -50,7 +76,7 @@ const Modal: React.FC<ModalProps> = ({
       document.body.style.width = '100%';
     } else {
       // Restore focus
-      if (previousFocusRef.current) {
+      if (previousFocusRef.current?.isConnected) {
         previousFocusRef.current.focus({ preventScroll: true });
       }
 
@@ -94,6 +120,38 @@ const Modal: React.FC<ModalProps> = ({
     };
   }, [open, closeOnEsc, onClose]);
 
+  useEffect(() => {
+    if (!open) return;
+
+    const handleTabTrap = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab') return;
+
+      const focusableElements = getFocusableElements();
+      if (focusableElements.length === 0) {
+        event.preventDefault();
+        modalRef.current?.focus();
+        return;
+      }
+
+      const first = focusableElements[0];
+      const last = focusableElements[focusableElements.length - 1];
+      const active = document.activeElement;
+
+      if (event.shiftKey && active === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleTabTrap);
+    return () => {
+      document.removeEventListener('keydown', handleTabTrap);
+    };
+  }, [open]);
+
   // Click outside handler
   const handleBackdropClick = (event: React.MouseEvent) => {
     if (closeOnBackdrop && event.target === event.currentTarget) {
@@ -110,7 +168,7 @@ const Modal: React.FC<ModalProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
             className="absolute inset-0 bg-slate-950/75 backdrop-blur-md"
             onClick={handleBackdropClick}
           />
@@ -118,25 +176,31 @@ const Modal: React.FC<ModalProps> = ({
           {/* Modal */}
           <motion.div
             ref={modalRef}
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.95, y: 20 }}
+            animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
+            exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.95, y: 20 }}
             transition={{
               type: 'spring',
               stiffness: 300,
               damping: 30,
-              duration: 0.2
+              duration: prefersReducedMotion ? 0 : 0.2
             }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={title ? titleId : undefined}
+            aria-label={title ? undefined : 'Dialoog'}
+            tabIndex={-1}
             className={`relative w-full ${maxWidthClassName} max-h-[88vh] overflow-y-auto rounded-2xl border border-cyan-300/15 bg-slate-900/78 shadow-[0_24px_70px_rgba(8,47,73,0.45)] backdrop-blur-xl`}
           >
             {/* Header */}
             {(title || showCloseButton) && (
               <div className="flex items-center justify-between border-b border-slate-700/55 p-5 sm:p-6">
                 {title && (
-                  <h2 className="pr-4 text-2xl font-bold tracking-tight text-cyan-300">{title}</h2>
+                  <h2 id={titleId} className="pr-4 text-2xl font-bold tracking-tight text-cyan-300">{title}</h2>
                 )}
                 {showCloseButton && (
                   <button
+                    type="button"
                     ref={closeButtonRef}
                     onClick={onClose}
                     className="focus-ring flex h-9 w-9 items-center justify-center rounded-lg border border-slate-600/70 bg-slate-800/70 text-slate-300 transition-colors hover:border-cyan-300/50 hover:text-white"

@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useScrollAttention } from '../hooks/useScrollAttention';
 
 const FloatingCTA: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const location = useLocation();
+  const prefersReducedMotion = useReducedMotion();
 
   // Scroll attention for pulse effect
-  const shouldPulse = useScrollAttention(1);
+  const shouldPulse = useScrollAttention(1) && !prefersReducedMotion;
 
   // Don't show on booking or status routes
   const shouldShow = location.pathname === '/' || location.pathname === '';
@@ -43,10 +44,10 @@ const FloatingCTA: React.FC = () => {
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.8, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.8, y: 20 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.8, y: 20 }}
+          animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
+          exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.8, y: 20 }}
+          transition={prefersReducedMotion ? { duration: 0.01 } : { type: 'spring', stiffness: 300, damping: 30 }}
           className="fixed bottom-6 right-6 z-40"
         >
           <Link
@@ -77,19 +78,20 @@ const FloatingCTA: React.FC = () => {
               />
             )}
 
-            {/* Subtle pulse animation */}
-            <motion.div
-              className="absolute inset-0 rounded-full border border-cyan-400/30"
-              animate={{
-                scale: [1, 1.15, 1],
-                opacity: [0.5, 0, 0.5],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            />
+            {shouldPulse && (
+              <motion.div
+                className="absolute inset-0 rounded-full border border-cyan-400/30"
+                animate={{
+                  scale: [1, 1.15, 1],
+                  opacity: [0.5, 0, 0.5],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
+            )}
           </Link>
         </motion.div>
       )}
