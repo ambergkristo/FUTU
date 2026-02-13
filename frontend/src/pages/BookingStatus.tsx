@@ -16,70 +16,146 @@ interface BookingDetails {
   customerPhone?: string;
 }
 
+interface StatusMeta {
+  label: string;
+  title: string;
+  description: string;
+  badgeClasses: string;
+  lineClasses: string;
+}
+
 const BookingStatus = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const bookingId = searchParams.get('bookingId');
+
+  const bookingIdFromQuery = searchParams.get('bookingId');
+  const bookingIdFromSession = sessionStorage.getItem('bookingId');
+  const bookingId = bookingIdFromQuery || bookingIdFromSession;
 
   const [booking, setBooking] = useState<BookingDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isPolling, setIsPolling] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
+    if (bookingIdFromQuery) {
+      sessionStorage.setItem('bookingId', bookingIdFromQuery);
+    }
+
     if (!bookingId) {
-      setError('Broneeringu ID puudub');
+      setError('Broneeringu ID puudub. Ava see leht uuesti maksevoost vıi alusta uut broneeringut avalehelt.');
       setLoading(false);
       return;
     }
 
-    fetchBookingDetails();
-  }, [bookingId]);
+    fetchBookingDetails(bookingId, true);
+  }, [bookingId, bookingIdFromQuery]);
 
-  const fetchBookingDetails = async () => {
+  useEffect(() => {
+    if (!bookingId || booking?.status?.toUpperCase() !== 'PENDING_PAYMENT') {
+      return;
+    }
+
+    const pollingIntervalMs = 2000;
+    const maxPollingDurationMs = 30000;
+    const startedAt = Date.now();
+
+    const pollingTimer = window.setInterval(() => {
+      if (Date.now() - startedAt >= maxPollingDurationMs) {
+        window.clearInterval(pollingTimer);
+        return;
+      }
+
+      fetchBookingDetails(bookingId, false);
+    }, pollingIntervalMs);
+
+    return () => window.clearInterval(pollingTimer);
+  }, [bookingId, booking?.status]);
+
+  const fetchBookingDetails = async (currentBookingId: string, showLoader: boolean) => {
+    if (showLoader) {
+      setLoading(true);
+    } else {
+      setIsPolling(true);
+    }
+
     try {
-      const response = await fetch(`http://localhost:8080/api/bookings/${bookingId}`);
+      const response = await fetch(`http://localhost:8080/api/bookings/${currentBookingId}`);
 
       if (response.ok) {
-        const bookingData = await response.json();
+        const bookingData: BookingDetails = await response.json();
         setBooking(bookingData);
+        setError('');
       } else if (response.status === 404) {
         setError('Broneeringut ei leitud');
       } else {
-        setError('Broneeringu andmete laadimine eba√µnnestus');
+        setError('Broneeringu andmete laadimine ebaınnestus');
       }
     } catch (err) {
       setError('Viga andmete laadimisel');
     } finally {
-      setLoading(false);
+      if (showLoader) {
+        setLoading(false);
+      } else {
+        setIsPolling(false);
+      }
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status?.toUpperCase()) {
-      case 'CONFIRMED':
-        return 'text-green-400';
-      case 'CANCELLED':
-        return 'text-red-400';
-      case 'DRAFT':
-      case 'PENDING_PAYMENT':
-        return 'text-yellow-400';
-      default:
-        return 'text-gray-400';
-    }
+  const navigateToBooking = () => {
+    window.location.href = '/#booking';
   };
 
-  const getStatusText = (status: string) => {
+  const getStatusMeta = (status: string): StatusMeta => {
     switch (status?.toUpperCase()) {
       case 'CONFIRMED':
-        return 'Kinnitatud';
+        return {
+          label: 'Kinnitatud',
+          title: 'Broneering on kinnitatud',
+          description: 'Kıik on korras. Ootame teid valitud ajal.',
+          badgeClasses: 'text-green-300 bg-green-500/15 border border-green-500/40',
+          lineClasses: 'from-green-400/80 to-green-600/80'
+        };
       case 'CANCELLED':
-        return 'T√ºhistatud';
-      case 'DRAFT':
-        return 'Mustand';
+        return {
+          label: 'T¸histatud',
+          title: 'Broneering on t¸histatud',
+          description: 'Seda aega ei ole enam vıimalik kasutada.',
+          badgeClasses: 'text-red-300 bg-red-500/15 border border-red-500/40',
+          lineClasses: 'from-red-400/80 to-red-600/80'
+        };
       case 'PENDING_PAYMENT':
-        return 'Ootel makse';
+        return {
+          label: 'Makset ootel',
+          title: 'Makse kinnitust oodatakse',
+          description: 'Kontrollime makse laekumist automaatselt iga 5 sekundi j‰rel.',
+          badgeClasses: 'text-text-secondary bg-white/5 border border-white/20',
+          lineClasses: 'from-slate-300/70 to-slate-500/70'
+        };
+      case 'EXPIRED':
+        return {
+          label: 'Aegunud',
+          title: 'Broneeringu makseaeg on lıppenud',
+          description: 'Palun alustage uus broneering sobiva aja leidmiseks.',
+          badgeClasses: 'text-amber-300 bg-amber-500/15 border border-amber-500/40',
+          lineClasses: 'from-amber-300/80 to-amber-500/80'
+        };
+      case 'DRAFT':
+        return {
+          label: 'Mustand',
+          title: 'Broneering on pooleli',
+          description: 'J‰tkamiseks kinnitage makse.',
+          badgeClasses: 'text-amber-300 bg-amber-500/15 border border-amber-500/40',
+          lineClasses: 'from-amber-300/80 to-amber-500/80'
+        };
       default:
-        return status || 'Teadmata';
+        return {
+          label: status || 'Teadmata',
+          title: 'Broneeringu staatus',
+          description: 'Kuvame hetkel teadaoleva staatuse.',
+          badgeClasses: 'text-text-secondary bg-white/5 border border-white/20',
+          lineClasses: 'from-primary/70 to-secondary/70'
+        };
     }
   };
 
@@ -107,7 +183,7 @@ const BookingStatus = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-bg-primary via-bg-secondary to-bg-primary flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-text-secondary">Laen broneeringu andmeid...</p>
         </div>
       </div>
@@ -117,26 +193,34 @@ const BookingStatus = () => {
   if (error || !booking) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-bg-primary via-bg-secondary to-bg-primary flex items-center justify-center">
-        <div className="container mx-auto px-4 max-w-md">
+        <div className="container mx-auto px-4 max-w-lg">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="glass-card p-8 text-center"
+            className="glass-card p-6 sm:p-8 text-center"
           >
-            <h1 className="text-2xl font-bold text-text-primary mb-4">
-              Viga
+            <h1 className="text-2xl sm:text-3xl font-bold text-text-primary mb-4">
+              Broneeringu staatust ei saa kuvada
             </h1>
-            <p className="text-text-muted mb-6">
+            <p className="text-text-muted mb-8">
               {error || 'Broneeringut ei leitud'}
             </p>
-            <Button onClick={() => navigate('/')}>
-              Tagasi avalehele
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button onClick={() => navigate('/')}>
+                Tagasi avalehele
+              </Button>
+              <Button variant="glass" onClick={navigateToBooking}>
+                Proovi uuesti broneerida
+              </Button>
+            </div>
           </motion.div>
         </div>
       </div>
     );
   }
+
+  const statusMeta = getStatusMeta(booking.status);
+  const isPendingPayment = booking.status?.toUpperCase() === 'PENDING_PAYMENT';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-bg-primary via-bg-secondary to-bg-primary py-8">
@@ -157,21 +241,29 @@ const BookingStatus = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="glass-card p-8"
+          className="glass-card p-6 sm:p-8"
         >
-          {/* Status */}
-          <div className="text-center mb-8">
-            <div className={`text-3xl font-bold mb-2 ${getStatusColor(booking.status)}`}>
-              {getStatusText(booking.status)}
+          <div className="text-center mb-8 space-y-4">
+            <div className="flex justify-center">
+              <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold ${statusMeta.badgeClasses}`}>
+                {isPendingPayment && <span className="w-3 h-3 rounded-full border-2 border-text-secondary border-t-transparent animate-spin" aria-hidden="true" />}
+                {statusMeta.label}
+              </span>
             </div>
-            <div className="w-16 h-1 bg-gradient-to-r from-primary to-secondary mx-auto rounded-full"></div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-text-primary">{statusMeta.title}</h2>
+            <p className="text-text-secondary max-w-xl mx-auto">{statusMeta.description}</p>
+            {isPendingPayment && (
+              <p className="text-sm text-text-muted" aria-live="polite">
+                {isPolling ? 'V‰rskendan staatust...' : 'Staatus v‰rskendatakse automaatselt.'}
+              </p>
+            )}
+            <div className={`w-16 h-1 bg-gradient-to-r ${statusMeta.lineClasses} mx-auto rounded-full`} />
           </div>
 
-          {/* Booking Details */}
           <div className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <h3 className="text-text-secondary font-medium mb-2">Kuup√§ev ja kellaaeg</h3>
+                <h3 className="text-text-secondary font-medium mb-2">Kuup‰ev ja kellaaeg</h3>
                 <p className="text-text-primary text-lg">
                   {formatDate(booking.date)}
                 </p>
@@ -183,12 +275,11 @@ const BookingStatus = () => {
               <div>
                 <h3 className="text-text-secondary font-medium mb-2">Hind</h3>
                 <p className="text-text-primary text-2xl font-bold text-accent-secondary">
-                  {(booking.priceCents / 100).toFixed(2)} ‚Ç¨
+                  {(booking.priceCents / 100).toFixed(2)} Ä
                 </p>
               </div>
             </div>
 
-            {/* Expiry */}
             {booking.expiresAt && (
               <div>
                 <h3 className="text-text-secondary font-medium mb-2">Kehtib kuni</h3>
@@ -198,7 +289,6 @@ const BookingStatus = () => {
               </div>
             )}
 
-            {/* Customer Information */}
             {(booking.customerName || booking.customerEmail || booking.customerPhone) && (
               <div className="border-t border-glass-border pt-6">
                 <h3 className="text-text-secondary font-medium mb-4">Kliendi andmed</h3>
@@ -223,20 +313,19 @@ const BookingStatus = () => {
             )}
           </div>
 
-          {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8 pt-6 border-t border-glass-border">
-            <Button
-              variant="glass"
-              onClick={() => navigate('/')}
-            >
-              Tee uus broneering
+            <Button onClick={() => navigate('/')}>
+              Tagasi avalehele
+            </Button>
+            <Button variant="glass" onClick={navigateToBooking}>
+              Proovi uuesti broneerida
             </Button>
             {booking.status === 'DRAFT' && (
               <Button
                 variant="primary"
                 onClick={() => navigate(`/booking?bookingId=${booking.id}`)}
               >
-                J√§tka broneeringut
+                J‰tka broneeringut
               </Button>
             )}
           </div>
@@ -247,3 +336,4 @@ const BookingStatus = () => {
 };
 
 export default BookingStatus;
+

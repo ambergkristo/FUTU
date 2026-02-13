@@ -248,6 +248,7 @@ const Booking = () => {
 
       // Store bookingId for potential display
       setBookingId(holdData.id);
+      sessionStorage.setItem('bookingId', String(holdData.id));
 
       // Step 2: Start payment
       const paymentRequest: StartPaymentRequest = {
