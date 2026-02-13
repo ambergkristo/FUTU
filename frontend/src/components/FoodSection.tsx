@@ -9,14 +9,14 @@ const offerCards = [
     highlights: ['Vali maitsed ja kogus kuni 24h enne pidu', 'Serveering on peo alguseks valmis']
   },
   {
-    title: 'Telli eraldi',
-    description: 'FUTU pizzeria on avatud ka ilma ruumi broneerimata.',
-    highlights: ['Söö kohapeal või võta kaasa', 'Saadaval iga päev FUTU aatriumis']
+    title: 'Telli kohapealt või kaasa',
+    description: 'FUTU pizzeria teenindab ka ilma ruumi broneeringuta.',
+    highlights: ['Söö kohapeal või võta kaasa', 'Takeaway on planeeritud ka Wolt/Bolt kanalitesse']
   },
   {
     title: 'Kuidas tellida',
-    description: 'Telli 3 lihtsa sammuga: vali aeg, kinnita kogus, naudi pidu.',
-    highlights: ['Sünnipäevaga tellimus kinnitatakse broneeringu järel', 'Eraldi tellimused võtame vastu kohapeal']
+    description: 'Telli 3 lihtsa sammuga: vali aeg, kinnita kogus, naudi.',
+    highlights: ['Sünnipäevaga tellimus kinnitatakse broneeringu järel', 'Wolt/Bolt liidestus lisandub järgmistes etappides']
   }
 ];
 
@@ -62,13 +62,13 @@ const FoodSection: React.FC = () => {
           className="section-title"
           variants={fadeInUpVariants}
         >
-          FUTU Pizzeria
+          Pizza
         </motion.h2>
         <motion.p
           className="section-subtitle text-cyan-200"
           variants={fadeInUpVariants}
         >
-          Käsitööpizza FUTU aatriumis: saad lisada tellimuse sünnipäevapeole või tellida ka täiesti eraldi.
+          Käsitööpizza FUTU aatriumis: lisa tellimus peole või telli eraldi kohapealt ja kaasa.
         </motion.p>
         <div className="grid gap-5 md:grid-cols-3 md:gap-6">
           {offerCards.map((card) => (
@@ -109,17 +109,17 @@ const FoodSection: React.FC = () => {
         maxWidthClassName="max-w-xl"
       >
         <p className="text-slate-200 leading-relaxed mb-4">
-          Sünnipäevapeole lisame pitsa sinu ruumibroneeringu juurde. Anna maitsed ja kogus teada hiljemalt 24h enne üritust.
+          Peole lisame pizza sinu ruumibroneeringu juurde. Anna maitsed ja kogus teada hiljemalt 24h enne üritust.
         </p>
         <p className="text-slate-300 leading-relaxed mb-6">
-          Soovi korral saad tellida ka eraldi otse FUTU pizzeriast, ilma peobroneeringuta.
+          Eraldi tellimused teenindame kohapeal ja kaasa. Wolt/Bolt tellimused lisanduvad pärast vastava liidestuse valmimist.
         </p>
         <div className="flex flex-col sm:flex-row gap-3">
           <button
             onClick={scrollToBooking}
             className="cta-primary flex-1 px-5 py-3"
           >
-            Broneeri peoaeg
+            Broneeri aeg
           </button>
           <button
             onClick={() => setIsOrderModalOpen(false)}

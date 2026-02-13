@@ -85,7 +85,7 @@ const RoomDetailsModal: React.FC<RoomDetailsModalProps> = ({
           onClick={() => onBook(room.id)}
           className="cta-primary w-full px-6 py-3 text-sm"
         >
-          Broneeri see tuba
+          Broneeri aeg
         </button>
       </div>
     </Modal>

@@ -74,7 +74,7 @@ const RoomCard: React.FC<RoomCardProps> = ({
             onClick={() => onBook(room.id)}
             className="cta-primary w-full px-4 py-2.5 text-sm"
           >
-            Broneeri
+            Broneeri aeg
           </button>
         </div>
       </div>

@@ -51,7 +51,7 @@ const PricingSection: React.FC = () => {
           </div>
 
           <div className="mt-5 rounded-xl border border-cyan-500/20 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 px-4 py-3 text-center">
-            <p className="text-slate-100 font-semibold">150 min + 30 min puhverdus</p>
+            <p className="text-slate-100 font-semibold">150 min pidu + 30 min ettevalmistus ja koristus</p>
           </div>
         </motion.div>
       </div>

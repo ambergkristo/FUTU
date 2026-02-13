@@ -1,10 +1,17 @@
 package ee.futu.booking.web;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
 public class CheckoutSimulatorController {
+
+    private final String frontendUrl;
+
+    public CheckoutSimulatorController(@Value("${app.frontend-url:/}") String frontendUrl) {
+        this.frontendUrl = frontendUrl;
+    }
 
     @GetMapping("/checkout/{paymentReference}")
     @ResponseBody
@@ -60,7 +67,8 @@ public class CheckoutSimulatorController {
                 "                if (response.ok) {\n" +
                 "                    resultDiv.className = 'result success-result';\n" +
                 "                    resultDiv.innerHTML = 'Payment processed successfully! Status: ' + status;\n" +
-                "                    resultDiv.innerHTML += '<br><br><a href=\"http://localhost:5173/\" style=\"color: #007bff; text-decoration: none; font-weight: bold;\">Return to booking page</a>';\n"
+                "                    resultDiv.innerHTML += '<br><br><a href=\"" + frontendUrl
+                + "\" style=\"color: #007bff; text-decoration: none; font-weight: bold;\">Return to booking page</a>';\n"
                 +
                 "                } else {\n" +
                 "                    const errorText = await response.text();\n" +

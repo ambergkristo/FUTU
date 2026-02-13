@@ -44,7 +44,7 @@ public class PaymentService {
                 booking.getId(),
                 booking.getStatus().name(),
                 paymentReference,
-                "http://localhost:8080/checkout/" + paymentReference,
+                "/checkout/" + paymentReference,
                 booking.getExpiresAt());
     }
 

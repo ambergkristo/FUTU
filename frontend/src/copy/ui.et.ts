@@ -6,16 +6,16 @@ export const uiEt = {
     about: 'Meist',
     faq: 'KKK',
     location: 'Asukoht',
-    book: 'Broneeri'
+    book: 'Broneeri aeg'
   },
   hero: {
-    title: 'Tulevik on siin',
-    subtitle: 'FUTU kogemuskeskus - VR, toitkogukond ja meeldivaba aja veetmise koht',
-    ctaBook: 'Broneeri sünnipäev',
+    title: 'FUTU kogemuskeskus uue põlvkonna üritustele',
+    subtitle: 'Sünnipäevad, eraüritused ja töötoad kaasaegses keskkonnas, mis on loodud eri vanusegruppidele.',
+    ctaBook: 'Broneeri aeg',
     ctaRooms: 'Vaata tube'
   },
   features: {
-    title: 'Miks FUTU',
+    title: 'Miks valida FUTU',
     items: [
       {
         title: 'Kaasaegne tehnoloogia',
