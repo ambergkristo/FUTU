@@ -1,26 +1,38 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useLang } from '../i18n/I18nContext';
-import { getUi } from '../copy/ui';
-import { et } from '../copy/et';
+import Modal from './Modal';
 
-interface FoodSectionProps {
-  pizzas?: Array<{
-    name: string;
-    description: string;
-  }>;
-  drinks?: Array<{
-    name: string;
-    description: string;
-  }>;
-}
+const offerCards = [
+  {
+    title: 'Lisa peole',
+    description: 'Pizza sobib lisapakina iga sünnipäevabroneeringu juurde.',
+    highlights: ['Vali maitsed ja kogus kuni 24h enne pidu', 'Serveering on peo alguseks valmis']
+  },
+  {
+    title: 'Telli eraldi',
+    description: 'FUTU pizzeria on avatud ka ilma ruumi broneerimata.',
+    highlights: ['Söö kohapeal või võta kaasa', 'Saadaval iga päev FUTU aatriumis']
+  },
+  {
+    title: 'Kuidas tellida',
+    description: 'Telli 3 lihtsa sammuga: vali aeg, kinnita kogus, naudi pidu.',
+    highlights: ['Sünnipäevaga tellimus kinnitatakse broneeringu järel', 'Eraldi tellimused võtame vastu kohapeal']
+  }
+];
 
-const FoodSection: React.FC<FoodSectionProps> = ({
-  pizzas = et.pizza.menu.pizzas,
-  drinks = et.pizza.menu.drinks
-}) => {
-  const { lang } = useLang();
-  const ui = getUi(lang);
+const FoodSection: React.FC = () => {
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+
+  const scrollToBooking = () => {
+    const element = document.getElementById('rooms');
+    if (!element) return;
+
+    const navbarOffset = 96;
+    const targetPosition = element.getBoundingClientRect().top + window.scrollY - navbarOffset;
+    window.scrollTo({ top: Math.max(0, targetPosition), behavior: 'smooth' });
+    setIsOrderModalOpen(false);
+  };
+
   const fadeInUpVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0 }
@@ -50,50 +62,73 @@ const FoodSection: React.FC<FoodSectionProps> = ({
           className="text-4xl font-bold text-center mb-4"
           variants={fadeInUpVariants}
         >
-          {ui.pizza.title}
+          FUTU Pizzeria
         </motion.h2>
         <motion.p
-          className="text-xl text-center text-cyan-400 mb-16 max-w-3xl mx-auto"
+          className="text-lg md:text-xl text-center text-cyan-300 mb-12 max-w-3xl mx-auto leading-relaxed"
           variants={fadeInUpVariants}
         >
-          {ui.pizza.subtitle}
+          Käsitööpizza FUTU aatriumis: saad lisada tellimuse sünnipäevapeole või tellida ka täiesti eraldi.
         </motion.p>
-        <div className="grid md:grid-cols-2 gap-12">
-          <motion.div variants={fadeInUpVariants}>
-            <h3 className="text-2xl font-bold mb-6 text-cyan-400">Pizza Valik</h3>
-            <div className="space-y-4">
-              {pizzas.map((pizza, index) => (
-                <div key={index} className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-lg p-4">
-                  <h4 className="font-semibold text-cyan-400">{pizza.name}</h4>
-                  <p className="text-slate-300 text-sm">{pizza.description}</p>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-          <motion.div variants={fadeInUpVariants}>
-            <h3 className="text-2xl font-bold mb-6 text-cyan-400">Joogid & Snackid</h3>
-            <div className="space-y-4">
-              {drinks.map((item, index) => (
-                <div key={index} className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-lg p-4">
-                  <h4 className="font-semibold text-cyan-400">{item.name}</h4>
-                  <p className="text-slate-300 text-sm">{item.description}</p>
-                </div>
-              ))}
-            </div>
-          </motion.div>
+        <div className="grid md:grid-cols-3 gap-5 md:gap-6">
+          {offerCards.map((card) => (
+            <motion.article
+              key={card.title}
+              variants={fadeInUpVariants}
+              className="rounded-2xl border border-slate-700/60 bg-slate-800/45 backdrop-blur-sm p-6 shadow-lg shadow-cyan-500/10"
+            >
+              <h3 className="text-xl font-semibold text-cyan-300 mb-3">{card.title}</h3>
+              <p className="text-slate-200 leading-relaxed mb-4">{card.description}</p>
+              <ul className="space-y-2">
+                {card.highlights.map((highlight) => (
+                  <li key={highlight} className="text-sm text-slate-300">
+                    • {highlight}
+                  </li>
+                ))}
+              </ul>
+            </motion.article>
+          ))}
         </div>
         <motion.div
-          className="flex flex-col sm:flex-row gap-4 justify-center mt-12"
+          className="flex justify-center mt-10"
           variants={fadeInUpVariants}
         >
-          <button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white px-8 py-3 rounded-lg font-semibold shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all duration-200 transform hover:scale-105">
-            {et.pizza.orderNow}
-          </button>
-          <button className="border border-slate-600 hover:border-cyan-400 text-slate-300 hover:text-white px-8 py-3 rounded-lg font-semibold transition-all duration-200 backdrop-blur-sm bg-slate-800/50 hover:bg-slate-700/50">
-            {et.pizza.viewMenu}
+          <button
+            onClick={() => setIsOrderModalOpen(true)}
+            className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white px-8 py-3 rounded-lg font-semibold shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/45 transition-all duration-200 transform hover:scale-105"
+          >
+            Telli pizza
           </button>
         </motion.div>
       </div>
+
+      <Modal
+        open={isOrderModalOpen}
+        onClose={() => setIsOrderModalOpen(false)}
+        title="Telli pizza"
+        maxWidthClassName="max-w-xl"
+      >
+        <p className="text-slate-200 leading-relaxed mb-4">
+          Sünnipäevapeole lisame pitsa sinu ruumibroneeringu juurde. Anna maitsed ja kogus teada hiljemalt 24h enne üritust.
+        </p>
+        <p className="text-slate-300 leading-relaxed mb-6">
+          Soovi korral saad tellida ka eraldi otse FUTU pizzeriast, ilma peobroneeringuta.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <button
+            onClick={scrollToBooking}
+            className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white px-5 py-3 rounded-lg font-semibold transition-all duration-200"
+          >
+            Broneeri peoaeg
+          </button>
+          <button
+            onClick={() => setIsOrderModalOpen(false)}
+            className="flex-1 border border-slate-600 hover:border-cyan-400 text-slate-300 hover:text-white px-5 py-3 rounded-lg font-semibold transition-all duration-200 bg-slate-800/50"
+          >
+            Sulge
+          </button>
+        </div>
+      </Modal>
     </motion.section>
   );
 };
