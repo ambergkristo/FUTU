@@ -20,15 +20,15 @@ const HowItWorks: React.FC = () => {
 
   return (
     <motion.section
-      className="py-20 px-4"
+      className="section-shell"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}
       variants={staggerContainer}
     >
-      <div className="max-w-7xl mx-auto">
+      <div className="section-inner">
         <motion.h2
-          className="text-4xl font-bold text-center mb-16"
+          className="section-title"
           variants={fadeInUpVariants}
         >
           {et.howItWorks.title}

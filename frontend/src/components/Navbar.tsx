@@ -165,7 +165,7 @@ const Navbar: React.FC<NavbarProps> = ({ scrollToSection }) => {
             {/* CTA Button with pulse effect */}
             <Link
               to="/booking"
-              className={`relative rounded-xl border border-cyan-200/40 bg-gradient-to-r from-cyan-500 to-blue-500 px-4 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow-[0_0_28px_rgba(34,211,238,0.35)] transition-all duration-200 hover:scale-105 hover:from-cyan-400 hover:to-blue-400 hover:shadow-[0_0_32px_rgba(56,189,248,0.5)] md:px-6 ${shouldPulse ? 'animate-pulse-glow' : ''
+              className={`cta-primary relative px-4 py-2 text-sm md:px-6 ${shouldPulse ? 'animate-pulse-glow' : ''
                 }`}
             >
               {ui.navbar.book}

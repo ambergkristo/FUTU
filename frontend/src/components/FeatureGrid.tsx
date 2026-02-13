@@ -33,20 +33,20 @@ const FeatureGrid: React.FC<FeatureGridProps> = ({ features }) => {
   return (
     <motion.section
       id="features"
-      className="py-20 px-4"
+      className="section-shell"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}
       variants={staggerContainer}
     >
-      <div className="max-w-7xl mx-auto">
+      <div className="section-inner">
         <motion.h2
-          className="text-4xl font-bold text-center mb-16"
+          className="section-title"
           variants={fadeInUpVariants}
         >
           {ui.features.title}
         </motion.h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {featuresData.map((feature, index) => (
             <motion.div
               key={index}

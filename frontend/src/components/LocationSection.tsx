@@ -35,20 +35,20 @@ const LocationSection: React.FC<LocationSectionProps> = ({
   return (
     <motion.section
       id="location"
-      className="py-20 px-4 bg-slate-900/50"
+      className="section-shell section-shell-muted"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}
       variants={staggerContainer}
     >
-      <div className="max-w-7xl mx-auto">
+      <div className="section-inner">
         <motion.h2
-          className="text-4xl font-bold text-center mb-16"
+          className="section-title"
           variants={fadeInUpVariants}
         >
           {et.location.title}
         </motion.h2>
-        <div className="grid md:grid-cols-2 gap-12">
+        <div className="grid gap-8 md:grid-cols-2 md:gap-12">
           <motion.div variants={fadeInUpVariants}>
             <h3 className="text-2xl font-bold mb-6 text-cyan-400">{et.location.visit}</h3>
             <div className="space-y-4">

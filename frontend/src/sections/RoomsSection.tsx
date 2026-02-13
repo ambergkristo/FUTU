@@ -44,26 +44,26 @@ const RoomsSection: React.FC<RoomsSectionProps> = ({ rooms, onBook }) => {
     <>
       <motion.section
         id="rooms"
-        className="py-20 px-4 bg-slate-900/50"
+        className="section-shell section-shell-muted"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
         variants={staggerContainer}
       >
-        <div className="max-w-7xl mx-auto">
+        <div className="section-inner">
           <motion.h2 
-            className="text-4xl font-bold text-center mb-4"
+            className="section-title"
             variants={fadeInUpVariants}
           >
             Ruumid
           </motion.h2>
           <motion.p 
-            className="text-center text-slate-300 mb-12"
+            className="section-subtitle"
             variants={fadeInUpVariants}
           >
             Vali endale sobivaim ruum ja broneeri aeg
           </motion.p>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             {rooms.map((room, index) => (
               <RoomCard
                 key={room.id}

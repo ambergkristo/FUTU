@@ -12,8 +12,8 @@ const Footer: React.FC<FooterProps> = ({ scrollToSection }) => {
   const ui = getUi(lang);
 
   return (
-    <footer className="bg-slate-900 border-t border-slate-800 py-12 px-4">
-      <div className="max-w-7xl mx-auto">
+    <footer className="bg-slate-900 border-t border-slate-800 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="section-inner">
         <div className="grid md:grid-cols-4 gap-8">
           <div>
             <h4 className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent mb-4">

@@ -21,21 +21,21 @@ const AboutSection: React.FC = () => {
   return (
     <motion.section
       id="about"
-      className="py-20 px-4"
+      className="section-shell"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}
       variants={staggerContainer}
     >
-      <div className="max-w-4xl mx-auto">
+      <div className="section-inner max-w-4xl">
         <motion.h2 
-          className="text-4xl font-bold text-center mb-16"
+          className="section-title"
           variants={fadeInUpVariants}
         >
           {et.about.title}
         </motion.h2>
         <motion.p 
-          className="text-xl text-slate-300 mb-12 text-center leading-relaxed"
+          className="section-subtitle"
           variants={fadeInUpVariants}
         >
           {et.about.vision}

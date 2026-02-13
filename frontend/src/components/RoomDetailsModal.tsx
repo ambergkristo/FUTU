@@ -83,7 +83,7 @@ const RoomDetailsModal: React.FC<RoomDetailsModalProps> = ({
         <button
           type="button"
           onClick={() => onBook(room.id)}
-          className="w-full relative rounded-xl border border-cyan-200/40 bg-gradient-to-r from-cyan-500 to-blue-500 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-[0_0_28px_rgba(34,211,238,0.35)] transition-all duration-200 hover:scale-[1.02] hover:from-cyan-400 hover:to-blue-400 hover:shadow-[0_0_32px_rgba(56,189,248,0.5)]"
+          className="cta-primary w-full px-6 py-3 text-sm"
         >
           Broneeri see tuba
         </button>
