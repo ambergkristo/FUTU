@@ -146,18 +146,18 @@ export const et = {
     steps: [
       {
         step: '01',
-        title: 'Vali ruum',
-        description: 'Leia endale sobivaim ruum ja broneeri aeg'
+        title: 'Vali tuba ja aeg',
+        description: 'Vali sobiv tuba ning broneerimiseks sobiv kuupäev ja kellaaeg.'
       },
       {
         step: '02',
-        title: 'Tasa broneering',
-        description: 'Maksa turvaliselt online ja kinnita broneering'
+        title: 'Kinnita broneering',
+        description: 'MVP-s toimub kinnitamine makse simulaatoriga, et voog kiiresti läbi teha.'
       },
       {
         step: '03',
-        title: 'Nauti kogemust',
-        description: 'Tulu, naudi ja kogu unustamatut aega'
+        title: 'Saa kinnitus ja jälgi staatust',
+        description: 'Pärast kinnitamist saad kohese teavituse ja näed broneeringu olekut ühes vaates.'
       }
     ]
   },
