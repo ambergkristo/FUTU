@@ -91,7 +91,7 @@ export const et = {
 
   // Pricing Section
   pricing: {
-    title: 'Hinnakiri',
+    title: 'Hinnad',
     duration: 'Kestvus: 150 min + 30 min puhver',
     packages: [
       {
@@ -142,22 +142,22 @@ export const et = {
 
   // How It Works
   howItWorks: {
-    title: 'Kuidas see töötab',
+    title: 'Kuidas broneerimine käib',
     steps: [
       {
         step: '01',
         title: 'Vali tuba ja aeg',
-        description: 'Vali sobiv tuba ning broneerimiseks sobiv kuupäev ja kellaaeg.'
+        description: 'Vali sobiv tuba, kuupäev ja vaba kellaaeg.'
       },
       {
         step: '02',
-        title: 'Kinnita broneering',
-        description: 'MVP-s toimub kinnitamine makse simulaatoriga, et voog kiiresti läbi teha.'
+        title: 'Kinnita andmed ja makse',
+        description: 'Sisesta kontakt, kinnita broneering ning tasu turvaliselt.'
       },
       {
         step: '03',
-        title: 'Saa kinnitus ja jälgi staatust',
-        description: 'Pärast kinnitamist saad kohese teavituse ja näed broneeringu olekut ühes vaates.'
+        title: 'Saa kinnitus',
+        description: 'Pärast makset saad kinnituse kohe ning näed broneeringu staatust ühes vaates.'
       }
     ]
   },
@@ -165,18 +165,18 @@ export const et = {
   // About Section
   about: {
     title: 'Meist',
-    vision: 'FUTU on tulevikulähedane kogemuskeskus, kus kohtuvad tehnoloogia, toit ja meeldivaba meelelahutus. Meie missioon on luua koht, kus inimesed saavad kohtuda, õppida ja nautida kaasaegseid elamusi professionaalses keskkonnas.',
+    vision: 'FUTU on modernne kogemuskeskus Allikul, Instituudi tee 134, mis on valmimas. Keskus on loodud sünnipäevade, tiimiürituste, eratellimusel ürituste ja töötubade korraldamiseks.',
     values: [
-      'Innovatsioon ja tehnoloogia',
-      'Kvaliteetne toit ja teenindus',
-      'Kogukond ja ühendus',
-      'Turvaline ja meeldivaba keskkond'
+      'Mitmekülgsed ruumid eri formaatidele',
+      'Kvaliteetne teenindus ja selge korraldus',
+      'Kaasaegne tehnoloogia ja professionaalne keskkond',
+      'Lahendused nii lastele kui täiskasvanutele'
     ]
   },
 
   // FAQ Section
   faq: {
-    title: 'Korduma Kippuvad Küsimused',
+    title: 'Korduma kippuvad küsimused',
     questions: [
       {
         question: 'Kaua ette pean broneerima?',

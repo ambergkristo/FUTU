@@ -55,13 +55,13 @@ const RoomsSection: React.FC<RoomsSectionProps> = ({ rooms, onBook }) => {
             className="section-title"
             variants={fadeInUpVariants}
           >
-            Ruumid
+            Toad
           </motion.h2>
           <motion.p 
             className="section-subtitle"
             variants={fadeInUpVariants}
           >
-            Vali endale sobivaim ruum ja broneeri aeg
+            Modulaarsed toad eri vanusegruppidele: sünnipäevadeks, töötubadeks ja privaatseteks üritusteks.
           </motion.p>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             {rooms.map((room, index) => (

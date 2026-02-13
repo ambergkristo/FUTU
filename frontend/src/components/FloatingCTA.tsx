@@ -51,7 +51,7 @@ const FloatingCTA: React.FC = () => {
         >
           <Link
             to="/booking"
-            aria-label="Broneeri"
+            aria-label="Broneeri aeg"
             className={`cta-primary group relative rounded-full px-6 py-3 ${shouldPulse ? 'animate-pulse-glow' : ''
               }`}
           >
@@ -59,7 +59,7 @@ const FloatingCTA: React.FC = () => {
             <div className="absolute inset-0 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 opacity-0 group-hover:opacity-20 blur-md transition-opacity duration-200"></div>
 
             {/* Button content */}
-            <span className="relative z-10">Broneeri</span>
+            <span className="relative z-10">Broneeri aeg</span>
 
             {/* Enhanced pulse glow effect for mobile */}
             {shouldPulse && (
