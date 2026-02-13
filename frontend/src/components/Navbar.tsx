@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { motion, useScroll, useTransform, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useScrollSpy } from '../hooks/useScrollSpy';
 import { useScrollAttention } from '../hooks/useScrollAttention';
 import { useLang } from '../i18n/I18nContext';
@@ -16,6 +16,7 @@ const Navbar: React.FC<NavbarProps> = ({ scrollToSection }) => {
   const { lang, setLang } = useLang();
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
   const ui = getUi(lang);
 
   // Language options
@@ -50,10 +51,11 @@ const Navbar: React.FC<NavbarProps> = ({ scrollToSection }) => {
   });
 
   // Scroll attention for CTA pulse effect
-  const shouldPulse = useScrollAttention(1);
+  const shouldPulse = useScrollAttention(1) && !prefersReducedMotion;
 
   return (
     <motion.nav
+      aria-label="Peamine navigeerimine"
       style={{ backgroundColor: navbarBackground }}
       className="fixed top-0 left-0 right-0 z-50 border-b border-cyan-300/15 backdrop-blur-xl supports-[backdrop-filter]:bg-slate-950/65 shadow-[0_0_30px_rgba(14,165,233,0.12)] transition-all duration-300"
     >
@@ -70,9 +72,10 @@ const Navbar: React.FC<NavbarProps> = ({ scrollToSection }) => {
           <div className="hidden md:flex items-center gap-2 rounded-full border border-slate-700/70 bg-slate-900/50 px-2 py-1">
             {navItems.map((item) => (
               <button
+                type="button"
                 key={item.key}
                 onClick={() => scrollToSection(item.key)}
-                className={`relative rounded-full px-3 py-1.5 text-sm font-medium tracking-wide transition-all duration-300 ${activeId === item.key
+                className={`focus-ring relative rounded-full px-3 py-1.5 text-sm font-medium tracking-wide transition-all duration-300 ${activeId === item.key
                   ? 'text-cyan-100'
                   : 'text-slate-300 hover:text-cyan-200'
                   }`}
@@ -100,8 +103,9 @@ const Navbar: React.FC<NavbarProps> = ({ scrollToSection }) => {
             {/* Language Dropdown */}
             <div className="relative hidden md:block">
               <button
+                type="button"
                 onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-                className="flex items-center space-x-1 rounded-lg border border-slate-600/60 bg-slate-800/55 px-3 py-1.5 text-sm font-medium text-slate-300 transition-all duration-200 hover:border-cyan-300/40 hover:bg-slate-700/60 hover:text-white"
+                className="focus-ring flex items-center space-x-1 rounded-lg border border-slate-600/60 bg-slate-800/55 px-3 py-1.5 text-sm font-medium text-slate-300 transition-all duration-200 hover:border-cyan-300/40 hover:bg-slate-700/60 hover:text-white"
                 aria-label="Select language"
                 aria-expanded={isLanguageDropdownOpen}
                 aria-haspopup="true"
@@ -130,6 +134,7 @@ const Navbar: React.FC<NavbarProps> = ({ scrollToSection }) => {
                   >
                     {languages.map((language) => (
                       <button
+                        type="button"
                         key={language.code}
                         onClick={() => {
                           setLang(language.code);
@@ -192,7 +197,7 @@ const Navbar: React.FC<NavbarProps> = ({ scrollToSection }) => {
                 setIsMobileMenuOpen((prev) => !prev);
                 setIsLanguageDropdownOpen(false);
               }}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-600/70 bg-slate-800/55 text-slate-200 transition hover:border-cyan-300/45 hover:text-cyan-100 md:hidden"
+              className="focus-ring inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-600/70 bg-slate-800/55 text-slate-200 transition hover:border-cyan-300/45 hover:text-cyan-100 md:hidden"
               aria-label="Open menu"
               aria-expanded={isMobileMenuOpen}
               aria-controls="mobile-nav-menu"
@@ -221,6 +226,7 @@ const Navbar: React.FC<NavbarProps> = ({ scrollToSection }) => {
               <div className="space-y-1 rounded-xl border border-slate-700/70 bg-slate-900/85 p-3 backdrop-blur-xl">
                 {navItems.map((item) => (
                   <button
+                    type="button"
                     key={item.key}
                     onClick={() => {
                       scrollToSection(item.key);
@@ -238,6 +244,7 @@ const Navbar: React.FC<NavbarProps> = ({ scrollToSection }) => {
                 <div className="mt-2 border-t border-slate-700/70 pt-2">
                   {languages.map((language) => (
                     <button
+                      type="button"
                       key={language.code}
                       onClick={() => setLang(language.code)}
                       className={`w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${language.code === lang

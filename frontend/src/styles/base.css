@@ -223,6 +223,12 @@ body {
   outline-offset: 2px;
 }
 
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.2);
+}
+
 /* Home section rhythm and headings */
 .section-shell {
   padding: 4.5rem 1rem;
