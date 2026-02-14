@@ -54,6 +54,18 @@ const Footer: React.FC<FooterProps> = ({ scrollToSection }) => {
                 </a>
               ))}
             </div>
+            <div className="mt-6 rounded-lg border border-cyan-500/30 bg-slate-800/70 p-4 backdrop-blur-sm">
+              <h5 className="text-sm font-semibold text-cyan-300">Kontakt</h5>
+              <p className="mt-2 text-sm text-slate-300">info@futu.ee</p>
+              <p className="text-sm text-slate-300">+372 5XXX XXXX</p>
+              <button
+                type="button"
+                onClick={() => scrollToSection('booking')}
+                className="mt-3 inline-flex items-center rounded-md border border-cyan-400/60 bg-cyan-400/10 px-4 py-2 text-sm font-semibold text-cyan-300 transition hover:bg-cyan-400/20 hover:text-cyan-200"
+              >
+                Broneeri aeg
+              </button>
+            </div>
           </div>
         </div>
         <div className="border-t border-slate-800 mt-8 pt-8 text-center text-slate-400 text-sm">

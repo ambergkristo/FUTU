@@ -17,6 +17,12 @@ const LocationSection: React.FC<LocationSectionProps> = ({
     contact: et.location.contact.content
   }
 }) => {
+  const addressText = 'Instituudi tee 134, Alliku, Estonia';
+  const openingNote = 'Hoone valmimas. Avamine peagi.';
+  const mapQuery = 'Instituudi tee 134, Alliku, Estonia';
+  const mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`;
+  const mapOpenUrl = `https://maps.google.com/?q=${encodeURIComponent(mapQuery)}`;
+
   const fadeInUpVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0 }
@@ -42,53 +48,46 @@ const LocationSection: React.FC<LocationSectionProps> = ({
       variants={staggerContainer}
     >
       <div className="section-inner">
-        <motion.h2
-          className="section-title"
-          variants={fadeInUpVariants}
-        >
+        <motion.h2 className="section-title" variants={fadeInUpVariants}>
           {et.location.title}
         </motion.h2>
         <div className="grid gap-8 md:grid-cols-2 md:gap-12">
           <motion.div variants={fadeInUpVariants}>
-            <h3 className="text-2xl font-bold mb-6 text-cyan-400">{et.location.visit}</h3>
+            <h3 className="mb-6 text-2xl font-bold text-cyan-400">{et.location.visit}</h3>
             <div className="space-y-4">
-              <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-lg p-6">
-                <h4 className="font-semibold text-cyan-400 mb-2">{et.location.address.title}</h4>
-                <p className="text-slate-300 whitespace-pre-line">{locationInfo.address}</p>
+              <div className="rounded-lg border border-slate-700/50 bg-slate-800/50 p-6 backdrop-blur-sm">
+                <h4 className="mb-2 font-semibold text-cyan-400">{et.location.address.title}</h4>
+                <p className="text-slate-300">{addressText}</p>
+                <p className="mt-2 text-sm text-slate-400">{openingNote}</p>
               </div>
-              <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-lg p-6">
-                <h4 className="font-semibold text-cyan-400 mb-2">{et.location.hours.title}</h4>
-                <p className="text-slate-300 whitespace-pre-line">{locationInfo.hours}</p>
+              <div className="rounded-lg border border-slate-700/50 bg-slate-800/50 p-6 backdrop-blur-sm">
+                <h4 className="mb-2 font-semibold text-cyan-400">{et.location.hours.title}</h4>
+                <p className="whitespace-pre-line text-slate-300">{locationInfo.hours}</p>
               </div>
-              <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-lg p-6">
-                <h4 className="font-semibold text-cyan-400 mb-2">{et.location.contact.title}</h4>
-                <p className="text-slate-300 whitespace-pre-line">{locationInfo.contact}</p>
-              </div>
-            </div>
-
-            {/* Social Links */}
-            <div className="mt-6">
-              <h4 className="font-semibold text-cyan-400 mb-4">Jälgi meid</h4>
-              <div className="flex space-x-4">
-                {['Facebook', 'Instagram', 'Discord'].map((social) => (
-                  <a
-                    key={social}
-                    href="#"
-                    className="w-10 h-10 bg-slate-700/50 hover:bg-slate-600/50 rounded-lg flex items-center justify-center text-slate-300 hover:text-cyan-400 transition-colors"
-                  >
-                    {social[0]}
-                  </a>
-                ))}
+              <div className="rounded-lg border border-slate-700/50 bg-slate-800/50 p-6 backdrop-blur-sm">
+                <h4 className="mb-2 font-semibold text-cyan-400">{et.location.contact.title}</h4>
+                <p className="whitespace-pre-line text-slate-300">{locationInfo.contact}</p>
               </div>
             </div>
           </motion.div>
           <motion.div variants={fadeInUpVariants}>
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl h-96 flex items-center justify-center">
-              <div className="text-center">
-                <span className="text-6xl mb-4 block">🗺️</span>
-                <p className="text-slate-300">{et.location.map.title}</p>
-                <p className="text-slate-400 text-sm">{et.location.map.subtitle}</p>
-              </div>
+            <div className="rounded-xl border border-slate-700/50 bg-slate-800/50 p-4 backdrop-blur-sm">
+              <iframe
+                title={et.location.map.title}
+                aria-label="Google Maps kaart asukohale Instituudi tee 134, Alliku, Estonia"
+                src={mapEmbedUrl}
+                className="h-80 w-full rounded-lg border border-slate-700/70"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+              <a
+                href={mapOpenUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex items-center rounded-md border border-cyan-400/60 bg-cyan-400/10 px-4 py-2 text-sm font-semibold text-cyan-300 transition hover:bg-cyan-400/20 hover:text-cyan-200"
+              >
+                Ava Google Mapsis
+              </a>
             </div>
           </motion.div>
         </div>
