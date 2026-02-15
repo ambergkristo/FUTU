@@ -27,7 +27,7 @@ public class PaymentService {
         Booking booking = bookingRepository.findById(request.getBookingId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "BOOKING_NOT_FOUND"));
 
-        if (booking.getStatus() != BookingStatus.DRAFT || booking.getExpiresAt().isBefore(LocalDateTime.now())) {
+        if (booking.getStatus() != BookingStatus.DRAFT || isExpired(booking)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "BOOKING_NOT_PAYABLE");
         }
 
@@ -44,7 +44,7 @@ public class PaymentService {
                 booking.getId(),
                 booking.getStatus().name(),
                 paymentReference,
-                "/checkout/" + paymentReference,
+                "/checkout/" + paymentReference + "?bookingId=" + booking.getId(),
                 booking.getExpiresAt());
     }
 
@@ -56,10 +56,13 @@ public class PaymentService {
         if (booking.getStatus() == BookingStatus.CONFIRMED || booking.getStatus() == BookingStatus.CANCELLED) {
             return;
         }
+        if (booking.getStatus() != BookingStatus.PENDING_PAYMENT) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "BOOKING_NOT_AWAITING_PAYMENT");
+        }
 
         switch (request.getEvent()) {
             case "PAID":
-                if (booking.getExpiresAt().isBefore(LocalDateTime.now())) {
+                if (isExpired(booking)) {
                     // Payment arrived after expiry - cancel
                     booking.setStatus(BookingStatus.CANCELLED);
                 } else {
@@ -90,5 +93,9 @@ public class PaymentService {
                     .toList();
             bookingRepository.updateStatusByIds(expiredIds, BookingStatus.CANCELLED);
         }
+    }
+
+    private boolean isExpired(Booking booking) {
+        return booking.getExpiresAt() == null || booking.getExpiresAt().isBefore(LocalDateTime.now());
     }
 }
