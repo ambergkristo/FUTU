@@ -1,8 +1,10 @@
 package ee.futu.booking.web;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @Controller
 public class CheckoutSimulatorController {
@@ -15,43 +17,38 @@ public class CheckoutSimulatorController {
 
     @GetMapping("/checkout/{paymentReference}")
     @ResponseBody
-    public String checkoutPage(@PathVariable String paymentReference) {
+    public String checkoutPage(@PathVariable String paymentReference,
+            @RequestParam("bookingId") Long bookingId,
+            @RequestParam(value = "lang", required = false) String lang,
+            @RequestHeader(value = "Accept-Language", required = false) String acceptLanguage) {
+        if (bookingId == null || bookingId < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "BOOKING_ID_INVALID");
+        }
+
+        String locale = resolveLocale(lang, acceptLanguage);
+        String pageTitle = "ee".equals(locale) ? "Makse simulaator" : "Payment simulator";
+        String paidLabel = "ee".equals(locale) ? "Makse onnistus" : "Pay success";
+        String failedLabel = "ee".equals(locale) ? "Makse ebaonnestus" : "Pay failed";
+        String statusUrl = buildStatusUrl(bookingId);
+
         return "<!DOCTYPE html>\n" +
                 "<html>\n" +
                 "<head>\n" +
-                "    <title>Payment Simulator</title>\n" +
+                "    <title>" + pageTitle + "</title>\n" +
                 "    <style>\n" +
-                "        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }\n"
-                +
-                "        h1 { color: #333; }\n" +
-                "        .payment-ref { background: #f5f5f5; padding: 10px; border-radius: 5px; font-family: monospace; }\n"
+                "        body { font-family: Arial, sans-serif; max-width: 420px; margin: 40px auto; padding: 20px; }\n"
                 +
                 "        button { padding: 12px 24px; margin: 10px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }\n"
                 +
                 "        .success { background: #28a745; color: white; }\n" +
                 "        .failed { background: #dc3545; color: white; }\n" +
-                "        .result { margin-top: 20px; padding: 10px; border-radius: 5px; }\n" +
-                "        .success-result { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }\n" +
-                "        .error-result { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }\n" +
                 "    </style>\n" +
                 "</head>\n" +
                 "<body>\n" +
-                "    <h1>Payment Simulator</h1>\n" +
-                "    <p>Payment Reference:</p>\n" +
-                "    <div class=\"payment-ref\">" + paymentReference + "</div>\n" +
-                "    \n" +
-                "    <button class=\"success\" onclick=\"simulatePayment('PAID')\">Pay Success</button>\n" +
-                "    <button class=\"failed\" onclick=\"simulatePayment('FAILED')\">Pay Failed</button>\n" +
-                "    \n" +
-                "    <div id=\"result\" class=\"result\" style=\"display: none;\"></div>\n" +
-                "    \n" +
+                "    <button class=\"success\" onclick=\"simulatePayment('PAID')\">" + paidLabel + "</button>\n" +
+                "    <button class=\"failed\" onclick=\"simulatePayment('FAILED')\">" + failedLabel + "</button>\n" +
                 "    <script>\n" +
                 "        async function simulatePayment(status) {\n" +
-                "            const resultDiv = document.getElementById('result');\n" +
-                "            resultDiv.style.display = 'block';\n" +
-                "            resultDiv.className = 'result';\n" +
-                "            resultDiv.innerHTML = 'Processing...';\n" +
-                "            \n" +
                 "            try {\n" +
                 "                const response = await fetch('/api/payments/webhook', {\n" +
                 "                    method: 'POST',\n" +
@@ -63,25 +60,32 @@ public class CheckoutSimulatorController {
                 "                        event: status\n" +
                 "                    })\n" +
                 "                });\n" +
-                "                \n" +
-                "                if (response.ok) {\n" +
-                "                    resultDiv.className = 'result success-result';\n" +
-                "                    resultDiv.innerHTML = 'Payment processed successfully! Status: ' + status;\n" +
-                "                    resultDiv.innerHTML += '<br><br><a href=\"" + frontendUrl
-                + "\" style=\"color: #007bff; text-decoration: none; font-weight: bold;\">Return to booking page</a>';\n"
-                +
-                "                } else {\n" +
-                "                    const errorText = await response.text();\n" +
-                "                    resultDiv.className = 'result error-result';\n" +
-                "                    resultDiv.innerHTML = 'Payment failed: ' + errorText;\n" +
-                "                }\n" +
                 "            } catch (error) {\n" +
-                "                resultDiv.className = 'result error-result';\n" +
-                "                resultDiv.innerHTML = 'Network error: ' + error.message;\n" +
+                "                console.error(error);\n" +
+                "            } finally {\n" +
+                "                window.location.assign('" + statusUrl + "');\n" +
                 "            }\n" +
                 "        }\n" +
                 "    </script>\n" +
                 "</body>\n" +
                 "</html>";
+    }
+
+    private String resolveLocale(String lang, String acceptLanguage) {
+        if (lang != null && lang.toLowerCase().startsWith("ee")) {
+            return "ee";
+        }
+        if (lang != null && lang.toLowerCase().startsWith("en")) {
+            return "en";
+        }
+        if (acceptLanguage != null && acceptLanguage.toLowerCase().startsWith("et")) {
+            return "ee";
+        }
+        return "en";
+    }
+
+    private String buildStatusUrl(Long bookingId) {
+        String base = frontendUrl.endsWith("/") ? frontendUrl.substring(0, frontendUrl.length() - 1) : frontendUrl;
+        return base + "/status?bookingId=" + bookingId;
     }
 }

@@ -1,9 +1,12 @@
-import { useState, useEffect } from 'react';
+ï»¿import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
+import { useLang } from '../i18n/I18nContext';
+import { getUi } from '../copy/ui';
+import { ApiError, requestJson } from '../api/client';
 
-interface BookingDetails {
+type BookingDetails = {
   id: number;
   status: string;
   date: string;
@@ -14,19 +17,24 @@ interface BookingDetails {
   customerName?: string;
   customerEmail?: string;
   customerPhone?: string;
-}
+};
 
-interface StatusMeta {
+type StatusMeta = {
   label: string;
   title: string;
   description: string;
   badgeClasses: string;
   lineClasses: string;
-}
+};
+
+const API_BASE_URL = 'http://localhost:8080/api';
 
 const BookingStatus = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { lang } = useLang();
+  const ui = getUi(lang);
+  const statusUi = ui.bookingStatus;
 
   const bookingIdFromQuery = searchParams.get('bookingId');
   const bookingIdFromSession = sessionStorage.getItem('bookingId');
@@ -43,20 +51,20 @@ const BookingStatus = () => {
     }
 
     if (!bookingId) {
-      setError('Broneeringu ID puudub. Ava see leht uuesti maksevoost või alusta uut broneeringut avalehelt.');
+      setError(statusUi.errors.missingBookingId);
       setLoading(false);
       return;
     }
 
-    fetchBookingDetails(bookingId, true);
-  }, [bookingId, bookingIdFromQuery]);
+    void fetchBookingDetails(bookingId, true);
+  }, [bookingId, bookingIdFromQuery, statusUi.errors.missingBookingId]);
 
   useEffect(() => {
     if (!bookingId || booking?.status?.toUpperCase() !== 'PENDING_PAYMENT') {
       return;
     }
 
-    const pollingIntervalMs = 2000;
+    const pollingIntervalMs = 5000;
     const maxPollingDurationMs = 30000;
     const startedAt = Date.now();
 
@@ -66,11 +74,31 @@ const BookingStatus = () => {
         return;
       }
 
-      fetchBookingDetails(bookingId, false);
+      void fetchBookingDetails(bookingId, false);
     }, pollingIntervalMs);
 
     return () => window.clearInterval(pollingTimer);
-  }, [bookingId, booking?.status]);
+  }, [booking?.status, bookingId]);
+
+  const mapStatusError = (requestError: unknown): string => {
+    if (!(requestError instanceof ApiError)) {
+      return statusUi.errors.network;
+    }
+
+    if (requestError.code === 'BOOKING_NOT_FOUND' || requestError.status === 404) {
+      return statusUi.errors.notFound;
+    }
+
+    if (requestError.code === 'VALIDATION_FAILED' || requestError.status === 400) {
+      return statusUi.errors.loadFailed;
+    }
+
+    if (requestError.status >= 500) {
+      return statusUi.errors.unknown;
+    }
+
+    return statusUi.errors.loadFailed;
+  };
 
   const fetchBookingDetails = async (currentBookingId: string, showLoader: boolean) => {
     if (showLoader) {
@@ -80,19 +108,11 @@ const BookingStatus = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:8080/api/bookings/${currentBookingId}`);
-
-      if (response.ok) {
-        const bookingData: BookingDetails = await response.json();
-        setBooking(bookingData);
-        setError('');
-      } else if (response.status === 404) {
-        setError('Broneeringut ei leitud');
-      } else {
-        setError('Broneeringu andmete laadimine ebaõnnestus');
-      }
-    } catch (err) {
-      setError('Viga andmete laadimisel');
+      const bookingData = await requestJson<BookingDetails>(`${API_BASE_URL}/bookings/${currentBookingId}`);
+      setBooking(bookingData);
+      setError('');
+    } catch (requestError) {
+      setError(mapStatusError(requestError));
     } finally {
       if (showLoader) {
         setLoading(false);
@@ -103,65 +123,65 @@ const BookingStatus = () => {
   };
 
   const navigateToBooking = () => {
-    window.location.href = '/#booking';
+    window.location.assign('/#booking');
   };
 
+  const statusMetaByKey: Record<string, StatusMeta> = useMemo(
+    () => ({
+      CONFIRMED: {
+        label: statusUi.statuses.confirmed.label,
+        title: statusUi.statuses.confirmed.title,
+        description: statusUi.statuses.confirmed.description,
+        badgeClasses: 'text-green-300 bg-green-500/15 border border-green-500/40',
+        lineClasses: 'from-green-400/80 to-green-600/80'
+      },
+      CANCELLED: {
+        label: statusUi.statuses.cancelled.label,
+        title: statusUi.statuses.cancelled.title,
+        description: statusUi.statuses.cancelled.description,
+        badgeClasses: 'text-red-300 bg-red-500/15 border border-red-500/40',
+        lineClasses: 'from-red-400/80 to-red-600/80'
+      },
+      PENDING_PAYMENT: {
+        label: statusUi.statuses.pendingPayment.label,
+        title: statusUi.statuses.pendingPayment.title,
+        description: statusUi.statuses.pendingPayment.description,
+        badgeClasses: 'text-text-secondary bg-white/5 border border-white/20',
+        lineClasses: 'from-slate-300/70 to-slate-500/70'
+      },
+      EXPIRED: {
+        label: statusUi.statuses.expired.label,
+        title: statusUi.statuses.expired.title,
+        description: statusUi.statuses.expired.description,
+        badgeClasses: 'text-amber-300 bg-amber-500/15 border border-amber-500/40',
+        lineClasses: 'from-amber-300/80 to-amber-500/80'
+      },
+      DRAFT: {
+        label: statusUi.statuses.draft.label,
+        title: statusUi.statuses.draft.title,
+        description: statusUi.statuses.draft.description,
+        badgeClasses: 'text-amber-300 bg-amber-500/15 border border-amber-500/40',
+        lineClasses: 'from-amber-300/80 to-amber-500/80'
+      },
+      UNKNOWN: {
+        label: statusUi.statuses.unknown.label,
+        title: statusUi.statuses.unknown.title,
+        description: statusUi.statuses.unknown.description,
+        badgeClasses: 'text-text-secondary bg-white/5 border border-white/20',
+        lineClasses: 'from-primary/70 to-secondary/70'
+      }
+    }),
+    [statusUi.statuses]
+  );
+
   const getStatusMeta = (status: string): StatusMeta => {
-    switch (status?.toUpperCase()) {
-      case 'CONFIRMED':
-        return {
-          label: 'Kinnitatud',
-          title: 'Broneering on kinnitatud',
-          description: 'Kõik on korras. Ootame teid valitud ajal.',
-          badgeClasses: 'text-green-300 bg-green-500/15 border border-green-500/40',
-          lineClasses: 'from-green-400/80 to-green-600/80'
-        };
-      case 'CANCELLED':
-        return {
-          label: 'Tühistatud',
-          title: 'Broneering on tühistatud',
-          description: 'Seda aega ei ole enam võimalik kasutada.',
-          badgeClasses: 'text-red-300 bg-red-500/15 border border-red-500/40',
-          lineClasses: 'from-red-400/80 to-red-600/80'
-        };
-      case 'PENDING_PAYMENT':
-        return {
-          label: 'Makset ootel',
-          title: 'Makse kinnitust oodatakse',
-          description: 'Kontrollime makse laekumist automaatselt iga 5 sekundi järel.',
-          badgeClasses: 'text-text-secondary bg-white/5 border border-white/20',
-          lineClasses: 'from-slate-300/70 to-slate-500/70'
-        };
-      case 'EXPIRED':
-        return {
-          label: 'Aegunud',
-          title: 'Broneeringu makseaeg on lõppenud',
-          description: 'Palun alustage uus broneering sobiva aja leidmiseks.',
-          badgeClasses: 'text-amber-300 bg-amber-500/15 border border-amber-500/40',
-          lineClasses: 'from-amber-300/80 to-amber-500/80'
-        };
-      case 'DRAFT':
-        return {
-          label: 'Mustand',
-          title: 'Broneering on pooleli',
-          description: 'Jätkamiseks kinnitage makse.',
-          badgeClasses: 'text-amber-300 bg-amber-500/15 border border-amber-500/40',
-          lineClasses: 'from-amber-300/80 to-amber-500/80'
-        };
-      default:
-        return {
-          label: status || 'Teadmata',
-          title: 'Broneeringu staatus',
-          description: 'Kuvame hetkel teadaoleva staatuse.',
-          badgeClasses: 'text-text-secondary bg-white/5 border border-white/20',
-          lineClasses: 'from-primary/70 to-secondary/70'
-        };
-    }
+    const normalized = (status || 'UNKNOWN').toUpperCase();
+    return statusMetaByKey[normalized] || statusMetaByKey.UNKNOWN;
   };
 
   const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('et-EE', {
+    const locale = lang === 'en' ? 'en-US' : 'et-EE';
+    return new Date(dateStr).toLocaleDateString(locale, {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -175,8 +195,8 @@ const BookingStatus = () => {
   };
 
   const formatDateTime = (dateTimeStr: string) => {
-    const date = new Date(dateTimeStr);
-    return date.toLocaleString('et-EE');
+    const locale = lang === 'en' ? 'en-US' : 'et-EE';
+    return new Date(dateTimeStr).toLocaleString(locale);
   };
 
   if (loading) {
@@ -184,7 +204,7 @@ const BookingStatus = () => {
       <div className="min-h-screen bg-gradient-to-br from-bg-primary via-bg-secondary to-bg-primary flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-text-secondary">Laen broneeringu andmeid...</p>
+          <p className="text-text-secondary">{statusUi.loading}</p>
         </div>
       </div>
     );
@@ -199,19 +219,11 @@ const BookingStatus = () => {
             animate={{ opacity: 1, y: 0 }}
             className="glass-card p-6 sm:p-8 text-center"
           >
-            <h1 className="text-2xl sm:text-3xl font-bold text-text-primary mb-4">
-              Broneeringu staatust ei saa kuvada
-            </h1>
-            <p className="text-text-muted mb-8">
-              {error || 'Broneeringut ei leitud'}
-            </p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-text-primary mb-4">{statusUi.errorTitle}</h1>
+            <p className="text-text-muted mb-8">{error || statusUi.errors.notFound}</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button onClick={() => navigate('/')}>
-                Tagasi avalehele
-              </Button>
-              <Button variant="glass" onClick={navigateToBooking}>
-                Proovi uuesti broneerida
-              </Button>
+              <Button onClick={() => navigate('/')}>{statusUi.backHome}</Button>
+              <Button variant="glass" onClick={navigateToBooking}>{statusUi.retryBooking}</Button>
             </div>
           </motion.div>
         </div>
@@ -230,12 +242,8 @@ const BookingStatus = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8"
         >
-          <h1 className="text-4xl md:text-5xl font-bold text-glow-primary mb-4">
-            Broneeringu staatus
-          </h1>
-          <p className="text-text-secondary text-lg">
-            Broneering #{booking.id}
-          </p>
+          <h1 className="text-4xl md:text-5xl font-bold text-glow-primary mb-4">{statusUi.title}</h1>
+          <p className="text-text-secondary text-lg">{statusUi.bookingNumberPrefix}{booking.id}</p>
         </motion.div>
 
         <motion.div
@@ -254,7 +262,7 @@ const BookingStatus = () => {
             <p className="text-text-secondary max-w-xl mx-auto">{statusMeta.description}</p>
             {isPendingPayment && (
               <p className="text-sm text-text-muted" aria-live="polite">
-                {isPolling ? 'Värskendan staatust...' : 'Staatus värskendatakse automaatselt.'}
+                {isPolling ? statusUi.pollingRefreshing : statusUi.pollingAuto}
               </p>
             )}
             <div className={`w-16 h-1 bg-gradient-to-r ${statusMeta.lineClasses} mx-auto rounded-full`} />
@@ -263,49 +271,41 @@ const BookingStatus = () => {
           <div className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <h3 className="text-text-secondary font-medium mb-2">Kuupäev ja kellaaeg</h3>
-                <p className="text-text-primary text-lg">
-                  {formatDate(booking.date)}
-                </p>
-                <p className="text-text-primary">
-                  {formatTime(booking.startTime)} - {formatTime(booking.endTime)}
-                </p>
+                <h3 className="text-text-secondary font-medium mb-2">{statusUi.labels.dateTime}</h3>
+                <p className="text-text-primary text-lg">{formatDate(booking.date)}</p>
+                <p className="text-text-primary">{formatTime(booking.startTime)} - {formatTime(booking.endTime)}</p>
               </div>
 
               <div>
-                <h3 className="text-text-secondary font-medium mb-2">Hind</h3>
-                <p className="text-text-primary text-2xl font-bold text-accent-secondary">
-                  {(booking.priceCents / 100).toFixed(2)} €
-                </p>
+                <h3 className="text-text-secondary font-medium mb-2">{statusUi.labels.price}</h3>
+                <p className="text-text-primary text-2xl font-bold text-accent-secondary">{(booking.priceCents / 100).toFixed(2)} EUR</p>
               </div>
             </div>
 
             {booking.expiresAt && (
               <div>
-                <h3 className="text-text-secondary font-medium mb-2">Kehtib kuni</h3>
-                <p className="text-text-primary">
-                  {formatDateTime(booking.expiresAt)}
-                </p>
+                <h3 className="text-text-secondary font-medium mb-2">{statusUi.labels.validUntil}</h3>
+                <p className="text-text-primary">{formatDateTime(booking.expiresAt)}</p>
               </div>
             )}
 
             {(booking.customerName || booking.customerEmail || booking.customerPhone) && (
               <div className="border-t border-glass-border pt-6">
-                <h3 className="text-text-secondary font-medium mb-4">Kliendi andmed</h3>
+                <h3 className="text-text-secondary font-medium mb-4">{statusUi.labels.customerInfo}</h3>
                 <div className="space-y-2">
                   {booking.customerName && (
                     <p className="text-text-primary">
-                      <span className="text-text-secondary">Nimi:</span> {booking.customerName}
+                      <span className="text-text-secondary">{statusUi.labels.name}:</span> {booking.customerName}
                     </p>
                   )}
                   {booking.customerEmail && (
                     <p className="text-text-primary">
-                      <span className="text-text-secondary">E-post:</span> {booking.customerEmail}
+                      <span className="text-text-secondary">{statusUi.labels.email}:</span> {booking.customerEmail}
                     </p>
                   )}
                   {booking.customerPhone && (
                     <p className="text-text-primary">
-                      <span className="text-text-secondary">Telefon:</span> {booking.customerPhone}
+                      <span className="text-text-secondary">{statusUi.labels.phone}:</span> {booking.customerPhone}
                     </p>
                   )}
                 </div>
@@ -314,18 +314,11 @@ const BookingStatus = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8 pt-6 border-t border-glass-border">
-            <Button onClick={() => navigate('/')}>
-              Tagasi avalehele
-            </Button>
-            <Button variant="glass" onClick={navigateToBooking}>
-              Proovi uuesti broneerida
-            </Button>
-            {booking.status === 'DRAFT' && (
-              <Button
-                variant="primary"
-                onClick={() => navigate(`/booking?bookingId=${booking.id}`)}
-              >
-                Jätka broneeringut
+            <Button onClick={() => navigate('/')}>{statusUi.backHome}</Button>
+            <Button variant="glass" onClick={navigateToBooking}>{statusUi.retryBooking}</Button>
+            {booking.status?.toUpperCase() === 'DRAFT' && (
+              <Button variant="primary" onClick={() => navigate(`/booking?bookingId=${booking.id}`)}>
+                {statusUi.continueBooking}
               </Button>
             )}
           </div>
@@ -336,4 +329,3 @@ const BookingStatus = () => {
 };
 
 export default BookingStatus;
-

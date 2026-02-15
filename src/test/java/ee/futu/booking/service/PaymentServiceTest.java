@@ -54,6 +54,7 @@ class PaymentServiceTest {
                 assertNotNull(response.getPaymentReference());
                 assertTrue(response.getPaymentUrl().contains("/checkout/"));
                 assertTrue(response.getPaymentUrl().contains(response.getPaymentReference()));
+                assertTrue(response.getPaymentUrl().contains("bookingId=1"));
                 assertEquals(draftBooking.getExpiresAt(), response.getExpiresAt());
 
                 verify(bookingRepository).save(any(Booking.class));
@@ -128,5 +129,23 @@ class PaymentServiceTest {
                 paymentService.handlePaymentWebhook(request);
 
                 verify(bookingRepository).save(any(Booking.class));
+        }
+
+        @Test
+        void webhook_paid_whenBookingNotPendingPayment_throwsBadRequest() {
+                draftBooking.setStatus(BookingStatus.DRAFT);
+                when(bookingRepository.findByPaymentReference(any(String.class)))
+                                .thenReturn(java.util.Optional.of(draftBooking));
+
+                PaymentWebhookRequest request = new PaymentWebhookRequest();
+                request.setPaymentReference("ref123");
+                request.setEvent("PAID");
+
+                org.springframework.web.server.ResponseStatusException exception = assertThrows(
+                                org.springframework.web.server.ResponseStatusException.class,
+                                () -> paymentService.handlePaymentWebhook(request));
+
+                assertEquals("BOOKING_NOT_AWAITING_PAYMENT", exception.getReason());
+                verify(bookingRepository, never()).save(any(Booking.class));
         }
 }

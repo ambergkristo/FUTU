@@ -1,10 +1,12 @@
 package ee.futu.booking.web;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 public class StartPaymentRequest {
     
     @NotNull
+    @Positive
     private Long bookingId;
     
     private String provider;
